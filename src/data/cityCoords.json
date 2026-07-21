@@ -1,0 +1,242 @@
+{
+  "Springfield, IL": {
+    "lat": 39.8,
+    "lng": -89.65
+  },
+  "St. Louis, MO": {
+    "lat": 38.63,
+    "lng": -90.2
+  },
+  "Joplin, MO": {
+    "lat": 37.08,
+    "lng": -94.51
+  },
+  "Oklahoma City, OK": {
+    "lat": 35.47,
+    "lng": -97.52
+  },
+  "Amarillo, TX": {
+    "lat": 35.22,
+    "lng": -101.83
+  },
+  "Albuquerque, NM": {
+    "lat": 35.08,
+    "lng": -106.65
+  },
+  "Flagstaff, AZ": {
+    "lat": 35.2,
+    "lng": -111.65
+  },
+  "Barstow, CA": {
+    "lat": 34.9,
+    "lng": -117.02
+  },
+  "Santa Monica, CA": {
+    "lat": 34.02,
+    "lng": -118.49
+  },
+  "Los Angeles, CA": {
+    "lat": 34.05,
+    "lng": -118.24
+  },
+  "Chicago, IL": {
+    "lat": 41.88,
+    "lng": -87.63
+  },
+  "Madison, WI": {
+    "lat": 43.07,
+    "lng": -89.4
+  },
+  "Minneapolis, MN": {
+    "lat": 44.98,
+    "lng": -93.27
+  },
+  "Rapid City, SD": {
+    "lat": 44.08,
+    "lng": -103.23
+  },
+  "Cody, WY": {
+    "lat": 44.52,
+    "lng": -109.06
+  },
+  "Jackson, WY": {
+    "lat": 43.48,
+    "lng": -110.76
+  },
+  "Salt Lake City, UT": {
+    "lat": 40.76,
+    "lng": -111.89
+  },
+  "Las Vegas, NV": {
+    "lat": 36.17,
+    "lng": -115.14
+  },
+  "Nashville, TN": {
+    "lat": 36.17,
+    "lng": -86.78
+  },
+  "Miami, FL": {
+    "lat": 25.77,
+    "lng": -80.19
+  },
+  "Austin, TX": {
+    "lat": 30.27,
+    "lng": -97.74
+  },
+  "New York, NY": {
+    "lat": 40.71,
+    "lng": -74.01
+  },
+  "Denver, CO": {
+    "lat": 39.74,
+    "lng": -104.99
+  },
+  "Paris": {
+    "lat": 48.86,
+    "lng": 2.35
+  },
+  "London": {
+    "lat": 51.51,
+    "lng": -0.13
+  },
+  "Barcelona": {
+    "lat": 41.39,
+    "lng": 2.17
+  },
+  "Amsterdam": {
+    "lat": 52.37,
+    "lng": 4.9
+  },
+  "Tokyo": {
+    "lat": 35.69,
+    "lng": 139.69
+  },
+  "San Francisco, CA": {
+    "lat": 37.77,
+    "lng": -122.42
+  },
+  "Monterey, CA": {
+    "lat": 36.6,
+    "lng": -121.9
+  },
+  "San Luis Obispo, CA": {
+    "lat": 35.28,
+    "lng": -120.66
+  },
+  "Santa Barbara, CA": {
+    "lat": 34.42,
+    "lng": -119.7
+  },
+  "Malibu, CA": {
+    "lat": 34.03,
+    "lng": -118.78
+  },
+  "Seattle, WA": {
+    "lat": 47.61,
+    "lng": -122.33
+  },
+  "Portland, OR": {
+    "lat": 45.52,
+    "lng": -122.68
+  },
+  "Eugene, OR": {
+    "lat": 44.05,
+    "lng": -123.09
+  },
+  "Crescent City, CA": {
+    "lat": 41.76,
+    "lng": -124.2
+  },
+  "Dallas, TX": {
+    "lat": 32.78,
+    "lng": -96.8
+  },
+  "Houston, TX": {
+    "lat": 29.76,
+    "lng": -95.37
+  },
+  "New Orleans, LA": {
+    "lat": 29.95,
+    "lng": -90.07
+  },
+  "Mobile, AL": {
+    "lat": 30.69,
+    "lng": -88.04
+  },
+  "Pensacola, FL": {
+    "lat": 30.42,
+    "lng": -87.22
+  },
+  "Panama City, FL": {
+    "lat": 30.16,
+    "lng": -85.66
+  },
+  "Tallahassee, FL": {
+    "lat": 30.44,
+    "lng": -84.28
+  },
+  "Savannah, GA": {
+    "lat": 32.08,
+    "lng": -81.1
+  },
+  "Genoa": {
+    "lat": 44.41,
+    "lng": 8.93
+  },
+  "Cinque Terre": {
+    "lat": 44.11,
+    "lng": 9.73
+  },
+  "Florence": {
+    "lat": 43.77,
+    "lng": 11.25
+  },
+  "Rome": {
+    "lat": 41.9,
+    "lng": 12.49
+  },
+  "Naples": {
+    "lat": 40.85,
+    "lng": 14.27
+  },
+  "Amalfi": {
+    "lat": 40.63,
+    "lng": 14.6
+  },
+  "Positano": {
+    "lat": 40.63,
+    "lng": 14.49
+  },
+  "Edinburgh": {
+    "lat": 55.95,
+    "lng": -3.19
+  },
+  "Inverness": {
+    "lat": 57.48,
+    "lng": -4.22
+  },
+  "Isle of Skye": {
+    "lat": 57.3,
+    "lng": -6.2
+  },
+  "Fort William": {
+    "lat": 56.82,
+    "lng": -5.1
+  },
+  "Glasgow": {
+    "lat": 55.86,
+    "lng": -4.25
+  },
+  "Belfast": {
+    "lat": 54.6,
+    "lng": -5.93
+  },
+  "Galway": {
+    "lat": 53.27,
+    "lng": -9.05
+  },
+  "Dublin": {
+    "lat": 53.33,
+    "lng": -6.25
+  }
+}
