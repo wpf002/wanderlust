@@ -13,7 +13,7 @@ import {
   Globe,
 } from "lucide-react";
 import { apiRequest } from "@/lib/api";
-import { trips } from "@/data/trips";
+import { useTrips } from "@/data/useTrips";
 import { estimateTripCosts, formatCurrency } from "@/lib/costs";
 import type { Settings } from "@/data/types";
 import Navbar from "@/components/Navbar";
@@ -30,6 +30,7 @@ type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 /** `/edit/:editSlug` — a shared, collaboratively-editable trip (bundle `YOe`). */
 export default function SharedEditPage({ editSlug }: { editSlug: string }) {
+  const trips = useTrips();
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState<SaveStatus>("idle");
 

@@ -15,7 +15,7 @@ import {
   Sun,
   Sparkles,
 } from "lucide-react";
-import { trips } from "@/data/trips";
+import { useTrips } from "@/data/useTrips";
 import { DEFAULT_SETTINGS, type Trip, type Settings } from "@/data/types";
 import {
   estimateTripCosts,
@@ -266,6 +266,7 @@ function ComparisonCard({
 
 export default function ComparePage() {
   const [, navigate] = useLocation();
+  const trips = useTrips();
   const [selectedIds, setSelectedIds] = useState<string[]>([
     trips[0].id,
     trips[1].id,

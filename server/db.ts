@@ -75,6 +75,13 @@ CREATE TABLE IF NOT EXISTS notif_prefs (
   key     TEXT PRIMARY KEY,
   enabled INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS custom_trips (
+  id         TEXT PRIMARY KEY,
+  data       TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
 `);
 
 /* ---------- Row types ---------- */
@@ -142,6 +149,13 @@ export interface RatingRow {
 export interface NotifPrefRow {
   key: string;
   enabled: number;
+}
+
+export interface CustomTripRow {
+  id: string;
+  data: string;
+  created_at: string;
+  updated_at: string;
 }
 
 /* ---------- Helpers ---------- */

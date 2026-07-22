@@ -9,6 +9,7 @@ import {
 } from "./data/types";
 import ExplorePage from "./pages/Explore";
 import PlanPage from "./pages/Plan";
+import CreateTripPage from "./pages/CreateTrip";
 import TripDetailPage from "./pages/TripDetail";
 import PackingPage from "./pages/Packing";
 import ComparePage from "./pages/Compare";
@@ -90,6 +91,12 @@ export default function App() {
               gasPriceData={gasPriceData}
             />
           )}
+        </Route>
+        <Route path="/create">
+          <CreateTripPage />
+        </Route>
+        <Route path="/create/:id">
+          {(params) => <CreateTripPage editId={params.id} />}
         </Route>
         <Route path="/packing">
           <PackingPage />

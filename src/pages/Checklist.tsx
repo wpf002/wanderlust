@@ -13,7 +13,7 @@ import {
   Trash2,
   Plus,
 } from "lucide-react";
-import { trips } from "@/data/trips";
+import { useTrips } from "@/data/useTrips";
 import { apiRequest } from "@/lib/api";
 import type { ChecklistItem } from "@/lib/checklist";
 import Navbar from "@/components/Navbar";
@@ -485,6 +485,7 @@ function ChecklistCalendar() {
 /** Trip Checklists page (bundle `HOe`). */
 export default function ChecklistPage() {
   const [tab, setTab] = useState<"list" | "calendar">("list");
+  const trips = useTrips();
 
   const tabClass = (active: boolean) =>
     `flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-colors ${

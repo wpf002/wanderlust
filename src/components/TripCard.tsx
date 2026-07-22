@@ -48,11 +48,18 @@ export default function TripCard({
               </p>
             </div>
           </div>
-          <span
-            className={`${colors.badge} border text-xs shrink-0 ml-2 px-2 py-0.5 rounded-full font-medium`}
-          >
-            {tripTypeLabel(template.type)}
-          </span>
+          <div className="flex items-center gap-1.5 shrink-0 ml-2">
+            {template.isCustom && (
+              <span className="text-xs px-2 py-0.5 rounded-full font-medium border border-[var(--color-primary)]/40 text-[var(--color-primary)] bg-[var(--color-primary)]/10">
+                Custom
+              </span>
+            )}
+            <span
+              className={`${colors.badge} border text-xs px-2 py-0.5 rounded-full font-medium`}
+            >
+              {tripTypeLabel(template.type)}
+            </span>
+          </div>
         </div>
 
         <div className="grid grid-cols-3 gap-2 mb-3">

@@ -5,6 +5,8 @@ import {
   Activity,
   ArrowLeft,
   ArrowRight,
+  Pencil,
+  Trash2,
   BedDouble,
   BookOpen,
   Building2,
@@ -52,7 +54,7 @@ import type {
   Settings,
   Trip,
 } from "@/data/types";
-import { getTrip, trips } from "@/data/trips";
+import { useTripsData } from "@/data/useTrips";
 import { cityCoords, lookupCity } from "@/data/cityCoords";
 import {
   estimateTripCosts,
@@ -1870,13 +1872,31 @@ export default function TripDetailPage({
   gasPriceData,
 }: TripDetailProps) {
   const [, navigate] = useLocation();
-  const trip = getTrip(templateId) || trips[0];
+  const { trips, isLoading: tripsLoading } = useTripsData();
+  const foundTrip = trips.find((t) => t.id === templateId);
+  // Fall back to the first template purely so the hooks below have data to work
+  // with; when `foundTrip` is missing we render a loading/not-found screen instead.
+  const trip = foundTrip ?? trips[0];
   const isRoadTrip = !!trip.roadTripDays;
   const roadDays = trip.roadTripDays || [];
   const intlDays = (trip.tripDays as unknown as InternationalDay[]) || [];
 
   const [departureDate, setDepartureDate] = useState("");
   const [activeTab, setActiveTab] = useState<TabId>("itinerary");
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDeleteCustom() {
+    if (!foundTrip?.isCustom) return;
+    if (!window.confirm(`Delete "${trip.name}"? This can't be undone.`)) return;
+    setDeleting(true);
+    try {
+      await apiRequest("DELETE", `/api/custom-trips/${trip.id}`);
+      await queryClient.invalidateQueries({ queryKey: ["/api/custom-trips"] });
+      navigate("/");
+    } catch {
+      setDeleting(false);
+    }
+  }
 
   const daysUntil = useMemo(() => {
     if (!departureDate) return null;
@@ -2010,16 +2030,63 @@ export default function TripDetailPage({
           attractions: d.attractions,
         }));
 
+  // A custom trip may not be in the list yet while /api/custom-trips loads, or
+  // the id may simply not exist.
+  if (!foundTrip) {
+    return (
+      <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
+        <Navbar />
+        <div className="max-w-3xl mx-auto px-6 py-24 text-center">
+          {tripsLoading ? (
+            <p className="text-[var(--color-text-muted)]">Loading trip…</p>
+          ) : (
+            <>
+              <h1 className="font-display font-bold text-2xl mb-2">Trip not found</h1>
+              <p className="text-[var(--color-text-muted)] mb-6">
+                This itinerary doesn't exist or may have been deleted.
+              </p>
+              <button
+                onClick={() => navigate("/")}
+                className="px-5 py-2.5 rounded-xl bg-[var(--color-primary)] text-white text-sm font-semibold"
+              >
+                Back to Explore
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        <button
-          onClick={() => navigate("/")}
-          className="flex items-center gap-2 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] mb-6 transition-colors"
-        >
-          <ArrowLeft size={15} /> All Trips
-        </button>
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center gap-2 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+          >
+            <ArrowLeft size={15} /> All Trips
+          </button>
+          {foundTrip?.isCustom && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigate(`/create/${trip.id}`)}
+                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-surface-offset)] transition-colors"
+              >
+                <Pencil size={13} /> Edit
+              </button>
+              <button
+                onClick={handleDeleteCustom}
+                disabled={deleting}
+                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-[var(--color-border)] text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-60"
+              >
+                <Trash2 size={13} /> {deleting ? "Deleting…" : "Delete"}
+              </button>
+            </div>
+          )}
+        </div>
 
         <div className="flex items-start justify-between flex-wrap gap-4 mb-6">
           <div>

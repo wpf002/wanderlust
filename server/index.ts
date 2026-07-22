@@ -9,6 +9,7 @@ import {
   setSetting,
   type ChecklistRow,
   type CommentRow,
+  type CustomTripRow,
   type DayNoteRow,
   type NoteRow,
   type NotifPrefRow,
@@ -474,6 +475,50 @@ app.get("/api/gas-prices", (_req, res) => {
     northernParksAvg,
     isLive: false,
   });
+});
+
+/* ---------- Custom trips (user-authored templates) ---------- */
+
+// Each row stores the full Trip JSON object under `data`. The frontend merges
+// these with the 7 built-in templates so custom trips flow through every page.
+app.get("/api/custom-trips", (_req, res) => {
+  const rows = db
+    .prepare("SELECT data FROM custom_trips ORDER BY created_at ASC")
+    .all() as Pick<CustomTripRow, "data">[];
+  res.json(rows.map((r) => JSON.parse(r.data)));
+});
+
+app.post("/api/custom-trips", (req, res) => {
+  const trip = req.body;
+  if (!trip || typeof trip !== "object" || !trip.name) {
+    return res.status(400).json({ error: "Invalid trip" });
+  }
+  const now = new Date().toISOString();
+  // Always assign a server-side id so custom trips can't collide with built-ins.
+  const id = `custom_${randomBytes(6).toString("hex")}`;
+  const data = { ...trip, id, isCustom: true };
+  db.prepare(
+    "INSERT INTO custom_trips (id, data, created_at, updated_at) VALUES (?, ?, ?, ?)",
+  ).run(id, JSON.stringify(data), now, now);
+  res.json(data);
+});
+
+app.put("/api/custom-trips/:id", (req, res) => {
+  const { id } = req.params;
+  const existing = db
+    .prepare("SELECT id FROM custom_trips WHERE id = ?")
+    .get(id) as { id: string } | undefined;
+  if (!existing) return res.status(404).json({ error: "Not found" });
+  const data = { ...req.body, id, isCustom: true };
+  db.prepare(
+    "UPDATE custom_trips SET data = ?, updated_at = ? WHERE id = ?",
+  ).run(JSON.stringify(data), new Date().toISOString(), id);
+  res.json(data);
+});
+
+app.delete("/api/custom-trips/:id", (req, res) => {
+  db.prepare("DELETE FROM custom_trips WHERE id = ?").run(req.params.id);
+  res.json({ success: true });
 });
 
 /* ---------- 404 for unknown API routes ---------- */

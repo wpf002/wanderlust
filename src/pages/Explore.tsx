@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Users, DollarSign, Gauge, Plane, Compass, PlusCircle, Search, X } from "lucide-react";
+import { Users, DollarSign, Gauge, Plane, Compass, PlusCircle, Plus, Search, X } from "lucide-react";
 import type { GasPriceData, Settings } from "@/data/types";
-import { trips } from "@/data/trips";
+import { useTrips } from "@/data/useTrips";
 import { estimateTripCosts } from "@/lib/costs";
 import Navbar from "@/components/Navbar";
 import Slider from "@/components/Slider";
@@ -60,6 +60,7 @@ export default function ExplorePage({
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [activeTags, setActiveTags] = useState<string[]>([]);
+  const trips = useTrips();
 
   const { data: ratingsList = [] } = useQuery<Rating[]>({
     queryKey: ["/api/ratings"],
@@ -116,7 +117,7 @@ export default function ExplorePage({
           return false;
         return true;
       }),
-    [search, filter, activeTags, settings],
+    [search, filter, activeTags, settings, trips],
   );
 
   const hasFilters = !!search.trim() || filter !== "all" || activeTags.length > 0;
@@ -259,6 +260,13 @@ export default function ExplorePage({
         <div id="prebuilt">
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-display font-bold text-xl">Featured Itineraries</h2>
+            <button
+              onClick={() => navigate("/create")}
+              data-testid="btn-create-trip"
+              className="flex items-center gap-1.5 text-sm px-3.5 py-2 rounded-xl border border-[var(--color-border)] hover:border-[var(--color-primary)]/50 hover:bg-[var(--color-surface-offset)] transition-colors"
+            >
+              <Plus size={15} /> Create a Trip
+            </button>
           </div>
           <div className="space-y-4 mb-6">
             <div className="relative">

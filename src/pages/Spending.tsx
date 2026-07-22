@@ -14,7 +14,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { apiRequest } from "@/lib/api";
-import { trips } from "@/data/trips";
+import { useTrips } from "@/data/useTrips";
 import { estimateTripCosts, formatCurrency } from "@/lib/costs";
 import type { Settings } from "@/data/types";
 import Navbar from "@/components/Navbar";
@@ -112,6 +112,7 @@ function BudgetProgress({ spent, goal }: { spent: number; goal: number }) {
 /** `/dashboard` — saved-trip spend dashboard with charts (bundle `k1e`). */
 export default function SpendingPage() {
   const [, navigate] = useLocation();
+  const trips = useTrips();
   const [savedTrips, setSavedTrips] = useState<EnrichedTrip[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

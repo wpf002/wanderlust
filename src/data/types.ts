@@ -86,6 +86,8 @@ export interface Trip {
   flightEstimate?: FlightEstimate;
   roadTripDays?: RoadTripDay[];
   tripDays?: InternationalDay[];
+  /** True for user-authored trips (created via the trip builder). */
+  isCustom?: boolean;
 }
 
 export type BudgetTierKey = "budget" | "midrange" | "premium";

@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { BookOpen, ArrowRight, Clock, Check, Save } from "lucide-react";
 import { apiRequest } from "@/lib/api";
-import { trips } from "@/data/trips";
+import { useTrips } from "@/data/useTrips";
 import Navbar from "@/components/Navbar";
 
 // The markdown editor and its stylesheets are heavy; load them only on /notes.
@@ -37,6 +37,7 @@ function formatSavedAt(value: string | undefined): string {
 /** `/notes` — per-template markdown trip journal (bundle `FOe`). */
 export default function JournalPage() {
   const [, navigate] = useLocation();
+  const trips = useTrips();
   const [activeId, setActiveId] = useState(trips[0].id);
   const [notes, setNotes] = useState<Record<string, JournalNote>>({});
   const [draft, setDraft] = useState("");

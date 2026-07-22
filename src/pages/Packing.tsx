@@ -10,7 +10,7 @@ import {
   CheckCircle2,
   Circle,
 } from "lucide-react";
-import { trips } from "@/data/trips";
+import { useTrips } from "@/data/useTrips";
 import {
   buildPackingList,
   SEASONS,
@@ -36,6 +36,7 @@ function packingKey(tripId: string, season: string): string {
 export default function PackingPage() {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
+  const trips = useTrips();
   const [tripId, setTripId] = useState(trips[0].id);
   const [season, setSeason] = useState("summer");
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});

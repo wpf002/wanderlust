@@ -19,7 +19,8 @@ import {
   CalendarDays,
   Package,
 } from "lucide-react";
-import { trips } from "@/data/trips";
+import { useTrips } from "@/data/useTrips";
+import type { Trip } from "@/data/types";
 
 interface CommandResult {
   id: string;
@@ -98,7 +99,7 @@ const PAGES: PageEntry[] = [
 ];
 
 /** Bundle `nJ`: build up to 10 search results from trips + pages. */
-function buildResults(query: string): CommandResult[] {
+function buildResults(query: string, trips: Trip[]): CommandResult[] {
   const term = query.toLowerCase().trim();
   if (!term) return [];
   const results: CommandResult[] = [];
@@ -146,10 +147,11 @@ export default function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
+  const trips = useTrips();
   const [, navigate] = useLocation();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const results = buildResults(query);
+  const results = buildResults(query, trips);
 
   const close = useCallback(() => {
     setOpen(false);
