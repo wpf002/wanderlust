@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -39,12 +39,13 @@ export default function PackingPage() {
   const [tripId, setTripId] = useState(trips[0].id);
   const [season, setSeason] = useState("summer");
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const seededKeys = useRef<Set<string>>(new Set());
 
   const trip = trips.find((t) => t.id === tripId) || trips[0];
   const categories = buildPackingList(trip, season);
   const key = packingKey(tripId, season);
 
-  const { data: items = [] } = useQuery<ChecklistItem[]>({
+  const { data: items = [], isFetched } = useQuery<ChecklistItem[]>({
     queryKey: ["/api/checklist", key],
   });
 
@@ -92,20 +93,24 @@ export default function PackingPage() {
   });
 
   // Seed the checklist rows the first time a trip+season combination is opened.
+  // Guard on `isFetched` (not the stale `items` closure) so we only seed once the
+  // query has actually resolved empty, and track keys we've already seeded so
+  // React StrictMode's double-effect invoke can't double-insert the rows.
   useEffect(() => {
-    if (items.length === 0) {
-      const rows: { text: string; sortOrder: number }[] = [];
-      let sortOrder = 0;
-      categories.forEach((category) => {
-        category.items.forEach((item) => {
-          rows.push({ text: item.name, sortOrder: sortOrder++ });
-        });
+    if (!isFetched || items.length > 0) return;
+    if (seededKeys.current.has(key)) return;
+    seededKeys.current.add(key);
+
+    const rows: { text: string; sortOrder: number }[] = [];
+    let sortOrder = 0;
+    categories.forEach((category) => {
+      category.items.forEach((item) => {
+        rows.push({ text: item.name, sortOrder: sortOrder++ });
       });
-      if (rows.length > 0) seedItems.mutate(rows);
-    }
-    // Re-seed only when the trip+season key changes (matches original behavior).
+    });
+    if (rows.length > 0) seedItems.mutate(rows);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  }, [key, isFetched, items.length]);
 
   function handleToggle(text: string) {
     const item = itemsByText[text];
