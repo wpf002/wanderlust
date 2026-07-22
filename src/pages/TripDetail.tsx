@@ -2180,8 +2180,11 @@ export default function TripDetailPage({
           </p>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          {/* Both columns stick below the navbar and cap at the viewport height,
+              scrolling internally when tall — so each stays in view as you scroll
+              and there's no empty gap beside a shorter column. */}
+          <div className="lg:col-span-2 lg:sticky lg:top-20 self-start lg:max-h-[calc(100vh-6.5rem)] lg:overflow-y-auto lg:pr-1 no-scrollbar">
             {/* Tabs */}
             <div
               className="mb-5 w-full grid h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground"
@@ -2409,8 +2412,8 @@ export default function TripDetailPage({
             )}
           </div>
 
-          {/* Sidebar — sticks below the navbar so it stays with the itinerary as it scrolls */}
-          <div className="space-y-5 lg:sticky lg:top-20 self-start">
+          {/* Sidebar — sticks and scrolls internally when taller than the viewport */}
+          <div className="space-y-5 lg:sticky lg:top-20 self-start lg:max-h-[calc(100vh-6.5rem)] lg:overflow-y-auto lg:pr-1 no-scrollbar">
             <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
               <h3 className="font-semibold text-sm mb-4 flex items-center gap-2">
                 <Settings2 size={14} /> Settings
