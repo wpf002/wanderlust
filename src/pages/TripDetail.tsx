@@ -55,7 +55,7 @@ import type {
   Trip,
 } from "@/data/types";
 import { useTripsData } from "@/data/useTrips";
-import { cityCoords, lookupCity } from "@/data/cityCoords";
+import { geocodeCity } from "@/lib/geocode";
 import {
   estimateTripCosts,
   formatCurrency,
@@ -1932,32 +1932,57 @@ export default function TripDetailPage({
       ? tripCurrency
       : { code: "USD", symbol: "$" };
 
-  // Map stops via lookupCity. Road trips walk start → each `to` → end; international
-  // trips walk each day's `location`. Consecutive days in the same city collapse to
-  // one marker so multi-night stays (e.g. 3 days in Rome) don't stack pins.
-  const mapStops = useMemo<RouteStop[]>(() => {
+  // Map stops via geocoding. Road trips walk start → each `to` → end; international
+  // trips walk each day's `location`. Names resolve through the built-in coordinate
+  // table first, then Open-Meteo geocoding (so custom trips map any city), and
+  // consecutive days in the same place collapse to one marker.
+  const [mapStops, setMapStops] = useState<RouteStop[]>([]);
+  const [mapLoading, setMapLoading] = useState(false);
+  useEffect(() => {
+    // Depend on `foundTrip` (a stable reference from the memoized trip list), NOT
+    // on roadDays/intlDays — those use `|| []` fallbacks that mint a new array
+    // every render, which would re-run this effect forever.
     const sequence: Array<{ name: string; day: number }> = [];
-    if (isRoadTrip && roadDays.length > 0) {
-      sequence.push({ name: roadDays[0].from, day: roadDays[0].day });
-      roadDays.forEach((d) => sequence.push({ name: d.to, day: d.day }));
-    } else if (intlDays.length > 0) {
-      intlDays.forEach((d) => {
+    if (foundTrip?.roadTripDays?.length) {
+      sequence.push({
+        name: foundTrip.roadTripDays[0].from,
+        day: foundTrip.roadTripDays[0].day,
+      });
+      foundTrip.roadTripDays.forEach((d) => sequence.push({ name: d.to, day: d.day }));
+    } else if (foundTrip?.tripDays?.length) {
+      foundTrip.tripDays.forEach((d) => {
         if (d.location) sequence.push({ name: d.location, day: d.day });
       });
     }
-    const resolved: RouteStop[] = [];
-    sequence.forEach(({ name, day }) => {
-      const coords = lookupCity(name);
-      if (!coords) return;
-      const prev = resolved[resolved.length - 1];
-      if (prev && prev.lat === coords.lat && prev.lng === coords.lng) return;
-      resolved.push({ day, name, lat: coords.lat, lng: coords.lng });
+    if (sequence.length === 0) {
+      setMapStops([]);
+      return;
+    }
+    let cancelled = false;
+    setMapLoading(true);
+    Promise.all(
+      sequence.map((s) => geocodeCity(s.name).then((coords) => ({ ...s, coords }))),
+    ).then((results) => {
+      if (cancelled) return;
+      const resolved: RouteStop[] = [];
+      results.forEach(({ name, day, coords }) => {
+        if (!coords) return;
+        const prev = resolved[resolved.length - 1];
+        if (prev && prev.lat === coords.lat && prev.lng === coords.lng) return;
+        resolved.push({ day, name, lat: coords.lat, lng: coords.lng });
+      });
+      setMapStops(
+        resolved.map((stop, i) => ({
+          ...stop,
+          type: i === 0 ? "start" : i === resolved.length - 1 ? "end" : "stop",
+        })),
+      );
+      setMapLoading(false);
     });
-    return resolved.map((stop, i) => ({
-      ...stop,
-      type: i === 0 ? "start" : i === resolved.length - 1 ? "end" : "stop",
-    }));
-  }, [isRoadTrip, roadDays, intlDays]);
+    return () => {
+      cancelled = true;
+    };
+  }, [foundTrip]);
 
   // Weather cities: the distinct, coordinate-resolvable stops along the route
   // (works for both road trips and international trips).
@@ -2264,6 +2289,11 @@ export default function TripDetailPage({
                     >
                       <RouteMap stops={mapStops} accentColor={mapAccentHex} />
                     </Suspense>
+                  ) : mapLoading ? (
+                    <div className="h-60 flex items-center justify-center text-[var(--color-text-muted)] text-sm gap-2">
+                      <span className="animate-spin w-4 h-4 border-2 border-[var(--color-primary)] border-t-transparent rounded-full" />
+                      Locating stops…
+                    </div>
                   ) : (
                     <div className="h-60 flex items-center justify-center text-[var(--color-text-muted)] text-sm">
                       No map data for this route

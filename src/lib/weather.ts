@@ -1,4 +1,4 @@
-import { lookupCity } from "@/data/cityCoords";
+import { geocodeCity } from "@/lib/geocode";
 
 export interface WeatherInfo {
   icon: string;
@@ -47,7 +47,7 @@ export async function fetchCityForecast(
   city: string,
   startDate?: string,
 ): Promise<CityForecast> {
-  const coords = lookupCity(city);
+  const coords = await geocodeCity(city);
   if (!coords) {
     return { city, forecasts: [], error: "City coordinates not available" };
   }
