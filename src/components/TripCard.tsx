@@ -37,13 +37,13 @@ export default function TripCard({
     >
       <div className="bg-[var(--color-surface)]/70 backdrop-blur-sm p-5 flex-1 flex flex-col">
         <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-2.5">
-            <span className="text-2xl">{template.emoji}</span>
-            <div>
-              <h3 className="font-display font-bold text-base leading-tight">
+          <div className="flex items-start gap-2.5 min-w-0">
+            <span className="text-2xl leading-none mt-0.5">{template.emoji}</span>
+            <div className="min-w-0 min-h-[5rem]">
+              <h3 className="font-display font-bold text-base leading-tight line-clamp-2">
                 {template.name}
               </h3>
-              <p className="text-xs text-[var(--color-text-muted)] mt-0.5 leading-snug">
+              <p className="text-xs text-[var(--color-text-muted)] mt-1 leading-snug line-clamp-2">
                 {template.subtitle}
               </p>
             </div>
@@ -89,18 +89,18 @@ export default function TripCard({
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-1 mb-3">
+        <div className="flex flex-wrap gap-1 mb-3 min-h-[3.25rem] content-start">
           {template.tags.slice(0, 4).map((tag) => (
             <span
               key={tag}
-              className={`text-xs px-2 py-0.5 rounded-full border ${colors.badge}`}
+              className={`text-xs px-2 py-0.5 h-fit rounded-full border ${colors.badge}`}
             >
               {tag}
             </span>
           ))}
         </div>
 
-        <div className="flex items-start gap-1.5 mb-3">
+        <div className="flex items-start gap-1.5 mb-3 min-h-[3.5rem]">
           <Star size={11} className={`${colors.accent} mt-0.5 shrink-0`} />
           <p className="text-xs text-[var(--color-text-muted)] leading-relaxed line-clamp-3">
             {template.highlights.slice(0, 3).join(" · ")}
