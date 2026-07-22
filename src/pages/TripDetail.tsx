@@ -65,7 +65,7 @@ import {
   convertFromUSD,
   formatConverted,
   getExchangeRates,
-  tripCurrencies,
+  tripCurrency as resolveTripCurrency,
   type ExchangeRates,
 } from "@/lib/currency";
 import { fetchCityForecast, weatherCodeInfo } from "@/lib/weather";
@@ -1920,7 +1920,7 @@ export default function TripDetailPage({
     queryClient.invalidateQueries({ queryKey: ["/api/day-notes", templateId] });
   };
 
-  const tripCurrency = tripCurrencies[templateId] || tripCurrencies.route66;
+  const tripCurrency = resolveTripCurrency(templateId, trip.currency);
   const isForeignCurrency = tripCurrency.code !== "USD";
   const [showLocalCurrency, setShowLocalCurrency] = useState(false);
   const [rates, setRates] = useState<ExchangeRates | null>(null);

@@ -60,6 +60,36 @@ export const tripCurrencies: Record<string, CurrencyInfo> = {
   scotland_ireland: { code: "GBP", symbol: "£", name: "British Pound" },
 };
 
+/** Currencies a custom trip can be priced in. Rates come from open.er-api.com. */
+export const CURRENCIES: CurrencyInfo[] = [
+  { code: "USD", symbol: "$", name: "US Dollar" },
+  { code: "EUR", symbol: "€", name: "Euro" },
+  { code: "GBP", symbol: "£", name: "British Pound" },
+  { code: "CAD", symbol: "CA$", name: "Canadian Dollar" },
+  { code: "AUD", symbol: "A$", name: "Australian Dollar" },
+  { code: "JPY", symbol: "¥", name: "Japanese Yen" },
+  { code: "MXN", symbol: "MX$", name: "Mexican Peso" },
+  { code: "CHF", symbol: "CHF", name: "Swiss Franc" },
+  { code: "NZD", symbol: "NZ$", name: "New Zealand Dollar" },
+];
+
+const CURRENCY_BY_CODE: Record<string, CurrencyInfo> = Object.fromEntries(
+  CURRENCIES.map((c) => [c.code, c]),
+);
+
+/** Resolve a currency code to its display info, defaulting to USD. */
+export function currencyInfo(code: string | undefined): CurrencyInfo {
+  return (code && CURRENCY_BY_CODE[code]) || CURRENCIES[0];
+}
+
+/**
+ * The currency a trip is priced in: built-ins use the fixed `tripCurrencies`
+ * map; custom (and any other) trips use their own `currency` field.
+ */
+export function tripCurrency(templateId: string, currencyCode: string | undefined): CurrencyInfo {
+  return tripCurrencies[templateId] ?? currencyInfo(currencyCode);
+}
+
 /** Convert a USD amount into `code`; returns the USD amount unchanged when rates are unavailable. */
 export function convertFromUSD(
   amountUSD: number,

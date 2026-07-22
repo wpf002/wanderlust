@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, MapPin, Save, ArrowLeft, GripVertical } from "lucide-react";
 import { apiRequest } from "@/lib/api";
+import { CURRENCIES } from "@/lib/currency";
 import { useTrip } from "@/data/useTrips";
 import type { Trip, BudgetTier } from "@/data/types";
 import Navbar from "@/components/Navbar";
@@ -46,6 +47,7 @@ interface FormState {
   subtitle: string;
   emoji: string;
   type: TripType;
+  currency: string;
   countries: string;
   tags: string;
   bestMonths: string;
@@ -91,6 +93,7 @@ const EMPTY_FORM: FormState = {
   subtitle: "",
   emoji: "🧭",
   type: "road_trip",
+  currency: "USD",
   countries: "",
   tags: "",
   bestMonths: "",
@@ -111,6 +114,7 @@ function tripToForm(trip: Trip): FormState {
     subtitle: trip.subtitle,
     emoji: trip.emoji,
     type: isRoad ? "road_trip" : "international",
+    currency: trip.currency || "USD",
     countries: trip.countries.join(", "),
     tags: trip.tags.join(", "),
     bestMonths: trip.bestMonths,
@@ -199,7 +203,7 @@ function formToTrip(form: FormState): Omit<Trip, "id"> {
     primaryTransport: isRoad ? "car" : "mixed",
     totalDays: form.days.length,
     countries: splitList(form.countries).length ? splitList(form.countries) : ["Custom"],
-    currency: "USD",
+    currency: form.currency || "USD",
     bestMonths: form.bestMonths.trim() || "Year-round",
     dailyBudgets: DAILY_BUDGETS[form.type],
     transportNotes: form.transportNotes.trim(),
@@ -345,6 +349,23 @@ export default function CreateTripPage({ editId }: { editId?: string }) {
                 onChange={(e) => set("bestMonths", e.target.value)}
                 placeholder="e.g. May–September"
               />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className={labelClass}>Currency</label>
+              <Select value={form.currency} onValueChange={(v) => set("currency", v)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CURRENCIES.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>
+                      {c.symbol} {c.name} ({c.code})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
