@@ -2181,10 +2181,8 @@ export default function TripDetailPage({
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          {/* Both columns stick below the navbar and cap at the viewport height,
-              scrolling internally when tall — so each stays in view as you scroll
-              and there's no empty gap beside a shorter column. */}
-          <div className="lg:col-span-2 lg:sticky lg:top-20 self-start lg:max-h-[calc(100vh-6.5rem)] lg:overflow-y-auto lg:pr-1 no-scrollbar">
+          {/* Left: the day-by-day itinerary scrolls with the page. */}
+          <div className="lg:col-span-2">
             {/* Tabs */}
             <div
               className="mb-5 w-full grid h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground"
