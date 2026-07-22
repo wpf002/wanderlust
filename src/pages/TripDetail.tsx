@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -78,7 +78,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/Select";
-import RouteMap, { type RouteStop } from "@/components/RouteMap";
+import type { RouteStop } from "@/components/RouteMap";
+
+// Leaflet + leaflet.css ship in their own chunk, fetched only when the Map tab opens.
+const RouteMap = lazy(() => import("@/components/RouteMap"));
 
 /* ------------------------------------------------------------------ */
 /* Local data types (fields the base Trip types don't declare verbatim) */
@@ -2138,7 +2141,13 @@ export default function TripDetailPage({
               <div className="mt-0">
                 <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
                   {mapStops.length > 0 ? (
-                    <RouteMap stops={mapStops} accentColor={mapAccentHex} />
+                    <Suspense
+                      fallback={
+                        <div className="h-[400px] bg-[var(--color-surface-offset)] animate-pulse" />
+                      }
+                    >
+                      <RouteMap stops={mapStops} accentColor={mapAccentHex} />
+                    </Suspense>
                   ) : (
                     <div className="h-60 flex items-center justify-center text-[var(--color-text-muted)] text-sm">
                       No map data for this route

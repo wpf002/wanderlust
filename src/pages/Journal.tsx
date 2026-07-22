@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { BookOpen, ArrowRight, Clock, Check, Save } from "lucide-react";
-import MDEditor from "@uiw/react-md-editor";
-import "@uiw/react-md-editor/markdown-editor.css";
-import "@uiw/react-markdown-preview/markdown.css";
 import { apiRequest } from "@/lib/api";
 import { trips } from "@/data/trips";
 import Navbar from "@/components/Navbar";
+
+// The markdown editor and its stylesheets are heavy; load them only on /notes.
+const MarkdownEditor = lazy(() => import("./notes/MarkdownEditor"));
 
 interface JournalNote {
   id: number;
@@ -217,14 +217,16 @@ export default function JournalPage() {
                 data-color-mode="auto"
                 className="px-3 py-3"
               >
-                <MDEditor
-                  value={draft}
-                  onChange={(value) => handleChange(value || "")}
-                  preview="live"
-                  height={380}
-                  style={{ background: "transparent", boxShadow: "none" }}
-                  visibleDragbar={false}
-                />
+                <Suspense
+                  fallback={
+                    <div className="h-[380px] rounded-lg bg-[var(--color-surface-offset)] animate-pulse" />
+                  }
+                >
+                  <MarkdownEditor
+                    value={draft}
+                    onChange={(value) => handleChange(value)}
+                  />
+                </Suspense>
               </div>
             </div>
 
