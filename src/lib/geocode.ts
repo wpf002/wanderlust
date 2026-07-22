@@ -18,7 +18,49 @@ function normalize(name: string): string {
 }
 
 function cacheKey(name: string): string {
-  return "geocode:v1:" + name.trim().toLowerCase();
+  return "geocode:v2:" + name.trim().toLowerCase();
+}
+
+const US_STATES: Record<string, string> = {
+  AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California",
+  CO: "Colorado", CT: "Connecticut", DE: "Delaware", FL: "Florida", GA: "Georgia",
+  HI: "Hawaii", ID: "Idaho", IL: "Illinois", IN: "Indiana", IA: "Iowa",
+  KS: "Kansas", KY: "Kentucky", LA: "Louisiana", ME: "Maine", MD: "Maryland",
+  MA: "Massachusetts", MI: "Michigan", MN: "Minnesota", MS: "Mississippi",
+  MO: "Missouri", MT: "Montana", NE: "Nebraska", NV: "Nevada", NH: "New Hampshire",
+  NJ: "New Jersey", NM: "New Mexico", NY: "New York", NC: "North Carolina",
+  ND: "North Dakota", OH: "Ohio", OK: "Oklahoma", OR: "Oregon", PA: "Pennsylvania",
+  RI: "Rhode Island", SC: "South Carolina", SD: "South Dakota", TN: "Tennessee",
+  TX: "Texas", UT: "Utah", VT: "Vermont", VA: "Virginia", WA: "Washington",
+  WV: "West Virginia", WI: "Wisconsin", WY: "Wyoming", DC: "District of Columbia",
+};
+
+/**
+ * Choose the best geocoding result using the region hint after the comma
+ * ("Springdale, UT" → prefer Utah). US state codes match the full state name
+ * EXACTLY (so "UT" doesn't loosely match "So-UT-h Dakota"); country codes match
+ * `country_code`; longer names fall back to a substring match on admin1/country.
+ */
+function pickResult(results: GeoResult[], rawName: string): GeoResult {
+  const afterComma = rawName.includes(",")
+    ? rawName.split(",")[1].split("(")[0].trim()
+    : "";
+  if (afterComma) {
+    const hint = afterComma.toLowerCase();
+    const stateName = US_STATES[afterComma.toUpperCase()]?.toLowerCase();
+    const match = results.find((r) => {
+      const admin1 = (r.admin1 || "").toLowerCase();
+      const country = (r.country || "").toLowerCase();
+      const cc = (r.country_code || "").toLowerCase();
+      if (stateName && admin1 === stateName) return true;
+      if (hint.length === 2 && cc === hint) return true;
+      if (hint.length > 3 && (admin1.includes(hint) || country.includes(hint)))
+        return true;
+      return false;
+    });
+    if (match) return match;
+  }
+  return results[0];
 }
 
 interface GeoResult {
@@ -57,26 +99,13 @@ export async function geocodeCity(name: string): Promise<LatLng | null> {
     const res = await fetch(
       `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
         query,
-      )}&count=5&language=en&format=json`,
+      )}&count=10&language=en&format=json`,
     );
     if (res.ok) {
       const data = (await res.json()) as { results?: GeoResult[] };
       const results = data.results ?? [];
       if (results.length > 0) {
-        // If the original name carried a region hint ("Springdale, UT"), prefer a
-        // result whose state/country matches it; otherwise take the top match.
-        const hint = name.includes(",")
-          ? name.split(",")[1].split("(")[0].trim().toLowerCase()
-          : "";
-        const match =
-          (hint &&
-            results.find(
-              (r) =>
-                (r.admin1 || "").toLowerCase().includes(hint) ||
-                (r.country || "").toLowerCase().includes(hint) ||
-                (r.country_code || "").toLowerCase() === hint,
-            )) ||
-          results[0];
+        const match = pickResult(results, name);
         result = { lat: match.latitude, lng: match.longitude };
       }
     }
