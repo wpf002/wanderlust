@@ -1,11 +1,17 @@
 import Database, { type Database as DatabaseType } from "better-sqlite3";
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-/** SQLite database stored next to the server code (gitignored via server/*.db). */
-export const db: DatabaseType = new Database(path.join(__dirname, "wanderlust.db"));
+// DATA_DIR lets a deploy point the database at a persistent volume (e.g. a
+// Railway volume mounted at /data). Defaults to the server directory in dev.
+const dataDir = process.env.DATA_DIR || __dirname;
+fs.mkdirSync(dataDir, { recursive: true });
+
+/** SQLite database file (gitignored via server/*.db). */
+export const db: DatabaseType = new Database(path.join(dataDir, "wanderlust.db"));
 
 db.pragma("journal_mode = WAL");
 
