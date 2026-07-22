@@ -381,8 +381,8 @@ export default function ComparePage() {
         </div>
 
         <div
-          className="grid gap-3 mb-6"
-          style={{ gridTemplateColumns: `repeat(${selectedIds.length}, minmax(0, 1fr))` }}
+          className="grid gap-3 mb-6 overflow-x-auto pb-1"
+          style={{ gridTemplateColumns: `repeat(${selectedIds.length}, minmax(min(11rem, 100%), 1fr))` }}
         >
           {selectedIds.map((id, index) => (
             <div key={id} className="flex items-center gap-2">
@@ -540,8 +540,8 @@ export default function ComparePage() {
         </div>
 
         <div
-          className="grid gap-4"
-          style={{ gridTemplateColumns: `repeat(${selectedTrips.length}, minmax(0, 1fr))` }}
+          className="grid gap-4 overflow-x-auto pb-1"
+          style={{ gridTemplateColumns: `repeat(${selectedTrips.length}, minmax(min(11rem, 100%), 1fr))` }}
         >
           {selectedTrips.map((trip, index) => (
             <ComparisonCard
@@ -554,8 +554,8 @@ export default function ComparePage() {
         </div>
 
         <div
-          className="grid gap-4 mt-6"
-          style={{ gridTemplateColumns: `repeat(${selectedTrips.length}, minmax(0, 1fr))` }}
+          className="grid gap-4 mt-6 overflow-x-auto pb-1"
+          style={{ gridTemplateColumns: `repeat(${selectedTrips.length}, minmax(min(11rem, 100%), 1fr))` }}
         >
           {selectedTrips.map((trip) => (
             <button

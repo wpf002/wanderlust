@@ -197,7 +197,7 @@ export default function CommandPalette() {
       <button
         onClick={() => setOpen(true)}
         data-testid="btn-command-palette"
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-lg text-xs text-[var(--color-text-muted)] hover:border-[var(--color-primary)]/50 hover:text-[var(--color-text)] transition-all"
+        className="fixed bottom-6 right-6 z-40 hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-lg text-xs text-[var(--color-text-muted)] hover:border-[var(--color-primary)]/50 hover:text-[var(--color-text)] transition-all"
         title="Search (⌘K)"
       >
         <Search size={13} />

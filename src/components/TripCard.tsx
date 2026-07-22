@@ -32,7 +32,7 @@ export default function TripCard({
   return (
     <div
       data-testid={`card-trip-${template.id}`}
-      className={`relative bg-gradient-to-br ${colors.card} border border-[var(--color-border)] rounded-2xl overflow-hidden group hover:border-[var(--color-primary)]/40 transition-all duration-300 cursor-pointer flex flex-col`}
+      className={`relative bg-gradient-to-br ${colors.card} border border-[var(--color-border)] rounded-2xl overflow-hidden group hover:border-[var(--color-primary)]/40 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 cursor-pointer flex flex-col h-full`}
       onClick={onExplore}
     >
       <div className="bg-[var(--color-surface)]/70 backdrop-blur-sm p-5 flex-1 flex flex-col">
@@ -93,9 +93,9 @@ export default function TripCard({
           ))}
         </div>
 
-        <div className="flex items-start gap-1.5 mb-3 flex-1">
+        <div className="flex items-start gap-1.5 mb-3">
           <Star size={11} className={`${colors.accent} mt-0.5 shrink-0`} />
-          <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
+          <p className="text-xs text-[var(--color-text-muted)] leading-relaxed line-clamp-3">
             {template.highlights.slice(0, 3).join(" · ")}
           </p>
         </div>
@@ -115,7 +115,7 @@ export default function TripCard({
         )}
 
         {template.difficulty && (
-          <div className="flex flex-wrap gap-x-3 gap-y-1 mb-3 px-1">
+          <div className="flex flex-wrap gap-x-3 gap-y-1 mb-3 px-1 mt-auto">
             <DifficultyMeter score={template.difficulty.overall} label="Overall" />
             {template.roadTripDays && template.difficulty.driveIntensity != null && (
               <DifficultyMeter

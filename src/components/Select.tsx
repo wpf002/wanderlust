@@ -135,9 +135,9 @@ export function SelectContent({
   return (
     <div
       role="listbox"
-      className={`absolute left-0 top-full mt-1 w-full translate-y-1 z-50 max-h-96 min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border bg-popover text-popover-foreground shadow-md${className ? ` ${className}` : ""}`}
+      className={`absolute left-0 top-full mt-1.5 z-50 max-h-96 w-max min-w-full max-w-[min(20rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-popover-foreground shadow-lg${className ? ` ${className}` : ""}`}
     >
-      <div className="p-1">{children}</div>
+      <div className="p-1.5">{children}</div>
     </div>
   );
 }
@@ -154,10 +154,10 @@ export function SelectItem({ value, children, className }: SelectItemProps) {
         onValueChange(value);
         setOpen(false);
       }}
-      className={`relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50${className ? ` ${className}` : ""}`}
+      className={`relative flex w-full cursor-pointer select-none items-center gap-2 whitespace-nowrap rounded-lg py-2 pl-8 pr-3 text-sm outline-none transition-colors hover:bg-[var(--color-surface-offset)] focus:bg-[var(--color-surface-offset)] ${isSelected ? "font-medium text-[var(--color-primary)]" : "text-[var(--color-text)]"}${className ? ` ${className}` : ""}`}
     >
-      <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-        {isSelected && <Check className="h-4 w-4" />}
+      <span className="absolute left-2.5 flex h-3.5 w-3.5 items-center justify-center text-[var(--color-primary)]">
+        {isSelected && <Check className="h-3.5 w-3.5" />}
       </span>
       <span>{children}</span>
     </button>
