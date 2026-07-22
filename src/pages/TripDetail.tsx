@@ -374,7 +374,15 @@ const SEASONAL_TIPS: Record<string, SeasonalTip[]> = {
 /* ------------------------------------------------------------------ */
 
 /** Bundle `NU`: horizontal drive-hours meter with a colored fill. */
-function DriveHoursMeter({ hours, max = 7 }: { hours: number; max?: number }) {
+function DriveHoursMeter({
+  hours,
+  max = 7,
+  label,
+}: {
+  hours: number;
+  max?: number;
+  label?: string;
+}) {
   const pct = Math.min((hours / max) * 100, 100);
   const color =
     hours <= 3 ? "bg-emerald-500" : hours <= 5.5 ? "bg-amber-500" : "bg-red-500";
@@ -383,11 +391,45 @@ function DriveHoursMeter({ hours, max = 7 }: { hours: number; max?: number }) {
       <div className="flex-1 h-1.5 bg-[var(--color-surface-offset)] rounded-full overflow-hidden">
         <div className={`h-full ${color} rounded-full`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-xs text-[var(--color-text-muted)] w-16 text-right shrink-0">
-        {hours}h {hours > 0 ? "travel" : ""}
+      <span className="text-xs text-[var(--color-text-muted)] w-20 text-right shrink-0">
+        {label ?? `${hours}h ${hours > 0 ? "travel" : ""}`}
       </span>
     </div>
   );
+}
+
+/**
+ * Parse a free-form travel-time string into decimal hours. International legs
+ * store prose like "~1h30m (Frecciarossa)", "2 hours 30 minutes", or "30 min",
+ * so we extract the first duration we can recognize. Returns null when nothing
+ * parses (and 0 for "N/A"/same-area days).
+ */
+function parseTravelHours(raw: string | undefined): number | null {
+  if (!raw) return null;
+  const s = raw.toLowerCase();
+  if (/n\/?a|staying|same area/.test(s)) return 0;
+  // "1h30m", "1 h 30 m", "2 hours 30 minutes", "3 hours"
+  const hm = s.match(/(\d+(?:\.\d+)?)\s*h(?:ours?|rs?)?\s*(?:(\d+)\s*m)?/);
+  if (hm) return parseFloat(hm[1]) + (hm[2] ? parseInt(hm[2], 10) / 60 : 0);
+  // "30 minutes", "40 min"
+  const min = s.match(/(\d+(?:\.\d+)?)\s*m(?:in(?:utes?)?)?\b/);
+  if (min) return parseFloat(min[1]) / 60;
+  if (/^\s*0\s*$/.test(s)) return 0;
+  return null;
+}
+
+/** Format decimal hours as a compact label, rolling into days past 24h. */
+function formatTravelDuration(hours: number): string {
+  if (hours <= 0) return "Same area";
+  if (hours < 1) return `${Math.round(hours * 60)}m`;
+  if (hours >= 24) {
+    const days = Math.floor(hours / 24);
+    const rem = Math.round(hours % 24);
+    return rem ? `${days}d ${rem}h` : `${days}d`;
+  }
+  const h = Math.floor(hours);
+  const m = Math.round((hours - h) * 60);
+  return m ? `${h}h ${m}m` : `${h}h`;
 }
 
 /** Bundle `Vne`: booking.com search URL for a hotel name + city. */
@@ -696,9 +738,7 @@ function InternationalDayCard({
   const nightCost = isLast
     ? 0
     : nightlyHotelCost(day.hotelPriceRange, settings.budget) * rooms;
-  const travelHours = day.travelTime
-    ? parseFloat(day.travelTime.replace(/[^0-9.]/g, "")) || 0
-    : 0;
+  const travelHours = parseTravelHours(day.travelTime);
   return (
     <div
       data-testid={`day-${day.day}`}
@@ -727,7 +767,12 @@ function InternationalDayCard({
               <span>{day.from}</span>
             </div>
           )}
-          {day.travelTime && <DriveHoursMeter hours={travelHours} />}
+          {travelHours != null && travelHours > 0 && (
+            <DriveHoursMeter
+              hours={travelHours}
+              label={`${formatTravelDuration(travelHours)} travel`}
+            />
+          )}
         </div>
         <div className="text-right hidden sm:block shrink-0">
           <div className="text-xs text-[var(--color-text-muted)]">
@@ -1369,7 +1414,7 @@ function WeatherForecast({
             onClick={() => setSelected(city)}
             className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${selected === city ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)]" : "border-[var(--color-border)] text-[var(--color-text-muted)] hover:border-[var(--color-primary)]/50"}`}
           >
-            {city.split(",")[0]}
+            {city.split(/[,—+(]/)[0].trim()}
           </button>
         ))}
       </div>
@@ -1410,10 +1455,10 @@ function WeatherForecast({
                 <span className="text-xl leading-none">{f.icon}</span>
                 <span className="text-xs font-semibold">{f.tempHighF}°</span>
                 <span className="text-xs text-[var(--color-text-faint)]">{f.tempLowF}°</span>
-                {f.precipInches > 0.05 && (
+                {f.precipInches >= 0.05 && (
                   <span className="text-xs text-blue-500 flex items-center gap-0.5">
                     <Droplets size={8} />
-                    {f.precipInches}"
+                    {f.precipInches.toFixed(2)}"
                   </span>
                 )}
               </div>
@@ -1867,38 +1912,42 @@ export default function TripDetailPage({
       ? tripCurrency
       : { code: "USD", symbol: "$" };
 
-  // Map stops: derive from road-trip days via lookupCity (start → each `to` → end).
+  // Map stops via lookupCity. Road trips walk start → each `to` → end; international
+  // trips walk each day's `location`. Consecutive days in the same city collapse to
+  // one marker so multi-night stays (e.g. 3 days in Rome) don't stack pins.
   const mapStops = useMemo<RouteStop[]>(() => {
-    if (!isRoadTrip || roadDays.length === 0) return [];
-    const sequence: Array<{ name: string; day: number }> = [
-      { name: roadDays[0].from, day: roadDays[0].day },
-      ...roadDays.map((d) => ({ name: d.to, day: d.day })),
-    ];
+    const sequence: Array<{ name: string; day: number }> = [];
+    if (isRoadTrip && roadDays.length > 0) {
+      sequence.push({ name: roadDays[0].from, day: roadDays[0].day });
+      roadDays.forEach((d) => sequence.push({ name: d.to, day: d.day }));
+    } else if (intlDays.length > 0) {
+      intlDays.forEach((d) => {
+        if (d.location) sequence.push({ name: d.location, day: d.day });
+      });
+    }
     const resolved: RouteStop[] = [];
     sequence.forEach(({ name, day }) => {
       const coords = lookupCity(name);
-      if (coords) resolved.push({ day, name, lat: coords.lat, lng: coords.lng });
+      if (!coords) return;
+      const prev = resolved[resolved.length - 1];
+      if (prev && prev.lat === coords.lat && prev.lng === coords.lng) return;
+      resolved.push({ day, name, lat: coords.lat, lng: coords.lng });
     });
     return resolved.map((stop, i) => ({
       ...stop,
       type: i === 0 ? "start" : i === resolved.length - 1 ? "end" : "stop",
     }));
-  }, [isRoadTrip, roadDays]);
+  }, [isRoadTrip, roadDays, intlDays]);
 
-  // Weather cities: overnight stops with known coordinates, start city first.
+  // Weather cities: the distinct, coordinate-resolvable stops along the route
+  // (works for both road trips and international trips).
   const weatherCities = useMemo(() => {
-    const allDays: Array<{ overnight?: string }> = isRoadTrip ? roadDays : intlDays;
     const list: string[] = [];
-    allDays.forEach((d) => {
-      const city = d.overnight;
-      if (city && cityCoords[city] && !list.includes(city)) list.push(city);
+    mapStops.forEach((s) => {
+      if (!list.includes(s.name)) list.push(s.name);
     });
-    if (mapStops.length > 0) {
-      const start = mapStops[0].name;
-      if (cityCoords[start] && !list.includes(start)) list.unshift(start);
-    }
     return list;
-  }, [isRoadTrip, roadDays, intlDays, mapStops]);
+  }, [mapStops]);
 
   const accent =
     trip.type === "road_trip"
@@ -2255,8 +2304,8 @@ export default function TripDetailPage({
             )}
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-5">
+          {/* Sidebar — sticks below the navbar so it stays with the itinerary as it scrolls */}
+          <div className="space-y-5 lg:sticky lg:top-20 self-start">
             <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
               <h3 className="font-semibold text-sm mb-4 flex items-center gap-2">
                 <Settings2 size={14} /> Settings

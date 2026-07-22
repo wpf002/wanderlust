@@ -51,7 +51,7 @@ interface PlanPageProps {
 const BUDGET_TIERS: readonly BudgetTierKey[] = ["budget", "midrange", "premium"];
 
 const PACE_OPTIONS = [
-  { v: "relaxed", label: "Relaxed", desc: "Fewer stops, more time" },
+  { v: "relaxed", label: "Relaxed", desc: "Fewer stops" },
   { v: "moderate", label: "Moderate", desc: "Balanced mix" },
   { v: "packed", label: "Packed", desc: "See everything" },
 ] as const;
@@ -352,7 +352,7 @@ export default function PlanPage({
                     onClick={() =>
                       setForm((prev) => ({ ...prev, pace: option.v }))
                     }
-                    className={`p-2.5 rounded-xl border text-left transition-all ${
+                    className={`flex flex-col p-2.5 rounded-xl border text-left transition-all ${
                       form.pace === option.v
                         ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10"
                         : "border-[var(--color-border)] hover:bg-[var(--color-surface-offset)]"
@@ -367,7 +367,7 @@ export default function PlanPage({
                     >
                       {option.label}
                     </div>
-                    <div className="text-xs text-[var(--color-text-faint)] mt-0.5">
+                    <div className="text-xs text-[var(--color-text-faint)] mt-0.5 leading-snug">
                       {option.desc}
                     </div>
                   </button>

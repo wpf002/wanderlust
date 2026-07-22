@@ -217,7 +217,7 @@ export default function ExplorePage({
             </div>
             <div>
               <label className="text-xs text-[var(--color-text-muted)] flex items-center gap-1.5 mb-2">
-                <Gauge size={11} /> Car MPG (road trips)
+                <Gauge size={11} /> Car MPG
               </label>
               <div className="flex items-center gap-3">
                 <Slider

@@ -49,21 +49,37 @@ export default function Navbar() {
             <circle
               cx="20"
               cy="20"
-              r="19"
+              r="18"
               stroke="currentColor"
-              strokeWidth="1.5"
+              strokeWidth="2"
               className="text-[var(--color-border)]"
             />
-            <path
-              d="M8 28 Q14 10 20 20 Q26 30 32 12"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
+            {/* Compass needle — north half in the brand color, south half muted */}
+            <polygon
+              points="20,6 25,20 15,20"
+              fill="currentColor"
               className="text-[var(--color-primary)]"
-              fill="none"
             />
-            <circle cx="32" cy="12" r="3" fill="currentColor" className="text-[var(--color-primary)]" />
-            <circle cx="8" cy="28" r="2.5" fill="currentColor" className="text-[var(--color-text-muted)]" />
+            <polygon
+              points="20,34 25,20 15,20"
+              fill="currentColor"
+              className="text-[var(--color-text-muted)]"
+            />
+            <circle
+              cx="20"
+              cy="20"
+              r="2.5"
+              fill="currentColor"
+              className="text-[var(--color-surface)]"
+            />
+            <circle
+              cx="20"
+              cy="20"
+              r="2.5"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              className="text-[var(--color-primary)]"
+            />
           </svg>
           <span className="font-display font-bold text-base tracking-tight">Wanderlust</span>
         </button>
