@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import "leaflet/dist/leaflet.css";
 
 export interface RouteStop {
   day: number;
@@ -17,6 +18,7 @@ interface RouteMapProps {
 export default function RouteMap({ stops, accentColor }: RouteMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
   useEffect(() => {
     if (!containerRef.current || stops.length === 0) return;
@@ -80,10 +82,25 @@ export default function RouteMap({ stops, accentColor }: RouteMapProps) {
       });
 
       map.fitBounds(L.latLngBounds(latLngs), { padding: [30, 30] });
+
+      // The map often mounts before its container has its final size (e.g. inside
+      // a tab that was just shown), which leaves CARTO tiles partially loaded.
+      // Recompute the size on the next frames so every tile fills in.
+      const invalidate = () => map.invalidateSize();
+      requestAnimationFrame(invalidate);
+      setTimeout(invalidate, 200);
+
+      const resizeObserver = new ResizeObserver(invalidate);
+      if (containerRef.current) resizeObserver.observe(containerRef.current);
+      resizeObserverRef.current = resizeObserver;
     });
 
     return () => {
       cancelled = true;
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+        resizeObserverRef.current = null;
+      }
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;

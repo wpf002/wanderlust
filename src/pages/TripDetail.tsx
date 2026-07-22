@@ -1033,7 +1033,7 @@ function CostBreakdown({
       : "text-blue-600 dark:text-blue-400";
   const money = (amountUSD: number) =>
     formatConverted(
-      convertFromUSD(amountUSD, currencyCode, rates),
+      Math.round(convertFromUSD(amountUSD, currencyCode, rates)),
       currencyCode,
       currencySymbol,
     );
