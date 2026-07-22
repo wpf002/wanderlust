@@ -75,18 +75,11 @@ export default function TripCard({
           <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--color-surface)]/80 text-2xl shadow-sm backdrop-blur-sm">
             {template.emoji}
           </span>
-          <div className="flex flex-col items-end gap-1.5">
-            {template.isCustom && (
-              <span className="rounded-full border border-[var(--color-primary)]/40 bg-[var(--color-surface)]/80 px-2 py-0.5 text-[11px] font-semibold text-[var(--color-primary)] backdrop-blur-sm">
-                Custom
-              </span>
-            )}
-            <span
-              className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${colors.badge}`}
-            >
-              {tripTypeLabel(template.type)}
-            </span>
-          </div>
+          <span
+            className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${colors.badge}`}
+          >
+            {tripTypeLabel(template.type)}
+          </span>
         </div>
 
         <span className="absolute bottom-3 left-4 flex items-center gap-1.5 rounded-full bg-[var(--color-surface)]/85 px-2.5 py-1 text-xs font-semibold shadow-sm backdrop-blur-sm">
