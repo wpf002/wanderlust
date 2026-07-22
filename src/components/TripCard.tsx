@@ -1,8 +1,14 @@
-import { Star, ArrowRight } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarDays,
+  Car,
+  Globe,
+  Plane,
+  Sparkles,
+} from "lucide-react";
 import type { Settings, Trip } from "@/data/types";
 import { estimateTripCosts, formatCurrency } from "@/lib/costs";
 import { tripColors, tripTypeLabel } from "@/lib/tripTheme";
-import DifficultyMeter from "@/components/DifficultyMeter";
 import StarRating from "@/components/StarRating";
 
 export interface Rating {
@@ -18,7 +24,7 @@ interface TripCardProps {
   rating: Rating | null;
 }
 
-/** Featured-itinerary card on the Explore page (bundle `Pre`). */
+/** Featured-itinerary card on the Explore page. */
 export default function TripCard({
   template,
   settings,
@@ -28,175 +34,168 @@ export default function TripCard({
   const colors = tripColors(template);
   const isRoadTrip = !!template.roadTripDays;
   const cost = estimateTripCosts(template, settings);
+  const overall = Math.round((template.difficulty?.overall ?? 0) * 10) / 10;
+
+  const location =
+    template.countries.length > 1
+      ? `${template.countries.length} countries`
+      : template.countries[0];
+  const transport =
+    template.primaryTransport === "car"
+      ? { icon: <Car size={13} />, label: "Drive" }
+      : template.primaryTransport === "mixed"
+        ? { icon: <Plane size={13} />, label: "Flight + drive" }
+        : { icon: <Plane size={13} />, label: "Fly" };
+
+  const primaryCost = isRoadTrip ? cost.fuel : cost.flights;
+  const primaryLabel = isRoadTrip ? "Fuel" : "Flights";
 
   return (
     <div
       data-testid={`card-trip-${template.id}`}
-      className={`relative bg-gradient-to-br ${colors.card} border border-[var(--color-border)] rounded-2xl overflow-hidden group hover:border-[var(--color-primary)]/40 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 cursor-pointer flex flex-col h-full`}
       onClick={onExplore}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onExplore();
+      }}
+      className="group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[var(--color-primary)]/50 hover:shadow-xl"
     >
-      <div className="bg-[var(--color-surface)]/70 backdrop-blur-sm p-5 flex-1 flex flex-col">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-start gap-2.5 min-w-0">
-            <span className="text-2xl leading-none mt-0.5">{template.emoji}</span>
-            <div className="min-w-0 min-h-[5rem]">
-              <h3 className="font-display font-bold text-base leading-tight line-clamp-2">
-                {template.name}
-              </h3>
-              <p className="text-xs text-[var(--color-text-muted)] mt-1 leading-snug line-clamp-2">
-                {template.subtitle}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 shrink-0 ml-2">
+      {/* ── Banner ─────────────────────────────────────────── */}
+      <div className={`relative h-24 overflow-hidden ${colors.banner}`}>
+        {/* oversized decorative emoji */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -bottom-6 -right-3 select-none text-[6rem] leading-none opacity-20 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6"
+        >
+          {template.emoji}
+        </span>
+
+        <div className="relative flex items-start justify-between p-4">
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--color-surface)]/80 text-2xl shadow-sm backdrop-blur-sm">
+            {template.emoji}
+          </span>
+          <div className="flex flex-col items-end gap-1.5">
             {template.isCustom && (
-              <span className="text-xs px-2 py-0.5 rounded-full font-medium border border-[var(--color-primary)]/40 text-[var(--color-primary)] bg-[var(--color-primary)]/10">
+              <span className="rounded-full border border-[var(--color-primary)]/40 bg-[var(--color-surface)]/80 px-2 py-0.5 text-[11px] font-semibold text-[var(--color-primary)] backdrop-blur-sm">
                 Custom
               </span>
             )}
             <span
-              className={`${colors.badge} border text-xs px-2 py-0.5 rounded-full font-medium`}
+              className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${colors.badge}`}
             >
               {tripTypeLabel(template.type)}
             </span>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 mb-3">
-          <div className="text-center py-2 bg-[var(--color-surface-offset)]/60 rounded-lg">
-            <div className={`text-sm font-bold ${colors.accent}`}>
-              {template.totalDays}{" "}
-              <span className="font-normal text-xs text-[var(--color-text-muted)]">
-                days
-              </span>
-            </div>
-          </div>
-          <div className="text-center py-2 bg-[var(--color-surface-offset)]/60 rounded-lg">
-            <div className={`text-xs font-bold ${colors.accent} leading-tight`}>
-              {template.countries.length > 1
-                ? `${template.countries.length} countries`
-                : template.countries[0]}
-            </div>
-          </div>
-          <div className="text-center py-2 bg-[var(--color-surface-offset)]/60 rounded-lg">
-            <div className={`text-xs font-bold ${colors.accent}`}>
-              {template.primaryTransport === "car"
-                ? "🚗 Drive"
-                : template.primaryTransport === "mixed"
-                  ? "✈️ Mixed"
-                  : "✈️ Fly"}
-            </div>
-          </div>
+        <span className="absolute bottom-3 left-4 flex items-center gap-1.5 rounded-full bg-[var(--color-surface)]/85 px-2.5 py-1 text-xs font-semibold shadow-sm backdrop-blur-sm">
+          <CalendarDays size={12} className={colors.accent} />
+          {template.totalDays} days
+        </span>
+      </div>
+
+      {/* ── Body ───────────────────────────────────────────── */}
+      <div className="flex flex-1 flex-col p-4">
+        <div className="min-h-[3.25rem]">
+          <h3 className="font-display text-[17px] font-bold leading-tight line-clamp-1">
+            {template.name}
+          </h3>
+          <p className="mt-1 text-xs leading-snug text-[var(--color-text-muted)] line-clamp-2">
+            {template.subtitle}
+          </p>
         </div>
 
-        <div className="flex flex-wrap gap-1 mb-3 min-h-[3.25rem] content-start">
-          {template.tags.slice(0, 4).map((tag) => (
+        {/* meta row */}
+        <div className="mt-3 flex items-center gap-3 text-xs text-[var(--color-text-muted)]">
+          <span className="flex items-center gap-1.5">
+            <Globe size={13} className={colors.accent} />
+            <span className="truncate">{location}</span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className={colors.accent}>{transport.icon}</span>
+            {transport.label}
+          </span>
+        </div>
+
+        {/* tags */}
+        <div className="mt-3 flex flex-wrap gap-1.5 min-h-[1.75rem] content-start">
+          {template.tags.slice(0, 3).map((tag) => (
             <span
               key={tag}
-              className={`text-xs px-2 py-0.5 h-fit rounded-full border ${colors.badge}`}
+              className="rounded-md bg-[var(--color-surface-offset)] px-2 py-0.5 text-[11px] font-medium text-[var(--color-text-muted)]"
             >
               {tag}
             </span>
           ))}
+          {template.tags.length > 3 && (
+            <span className="rounded-md px-1.5 py-0.5 text-[11px] font-medium text-[var(--color-text-faint)]">
+              +{template.tags.length - 3}
+            </span>
+          )}
         </div>
 
-        <div className="flex items-start gap-1.5 mb-3 min-h-[3.5rem]">
-          <Star size={11} className={`${colors.accent} mt-0.5 shrink-0`} />
-          <p className="text-xs text-[var(--color-text-muted)] leading-relaxed line-clamp-3">
+        {/* highlights */}
+        <div className="mt-3 flex items-start gap-1.5 min-h-[2.5rem]">
+          <Sparkles size={12} className={`${colors.accent} mt-0.5 shrink-0`} />
+          <p className="text-xs leading-relaxed text-[var(--color-text-muted)] line-clamp-2">
             {template.highlights.slice(0, 3).join(" · ")}
           </p>
         </div>
 
-        {rating && (
-          <div className="flex items-center gap-2 mb-3 px-1">
-            <StarRating stars={rating.stars} />
-            <span className="text-xs text-[var(--color-text-muted)]">
-              Your rating
+        {/* difficulty + optional rating */}
+        <div className="mt-3 flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] font-medium text-[var(--color-text-faint)]">
+              Difficulty
             </span>
-            {rating.review && (
-              <span className="text-xs text-[var(--color-text-faint)] truncate max-w-[120px]">
-                “{rating.review}”
-              </span>
-            )}
+            <div className="flex gap-1">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <span
+                  key={n}
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    n <= Math.round(overall)
+                      ? colors.dot
+                      : "bg-[var(--color-surface-offset)]"
+                  }`}
+                />
+              ))}
+            </div>
+            <span className="text-[11px] font-semibold text-[var(--color-text-muted)]">
+              {overall}
+            </span>
           </div>
-        )}
+          {rating && <StarRating stars={rating.stars} />}
+        </div>
+      </div>
 
-        {template.difficulty && (
-          <div className="flex flex-wrap gap-x-3 gap-y-1 mb-3 px-1 mt-auto">
-            <DifficultyMeter score={template.difficulty.overall} label="Overall" />
-            {template.roadTripDays && template.difficulty.driveIntensity != null && (
-              <DifficultyMeter
-                score={template.difficulty.driveIntensity}
-                label="Drive"
-              />
-            )}
-            <DifficultyMeter
-              score={template.difficulty.physicalActivity}
-              label="Physical"
-            />
-            <DifficultyMeter
-              score={template.difficulty.planningComplexity}
-              label="Planning"
-            />
-          </div>
-        )}
-
-        <div className="bg-[var(--color-surface-offset)]/70 rounded-xl p-3 mb-4">
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            {isRoadTrip ? (
-              <>
-                <div>
-                  <span className="text-[var(--color-text-faint)]">Fuel est.</span>
-                  <div className="font-semibold text-sm">
-                    {formatCurrency(cost.fuel || 0)}
-                  </div>
-                </div>
-                <div>
-                  <span className="text-[var(--color-text-faint)]">
-                    Lodging est.
-                  </span>
-                  <div className="font-semibold text-sm">
-                    {formatCurrency(cost.lodging)}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <>
-                <div>
-                  <span className="text-[var(--color-text-faint)]">
-                    Flights est.
-                  </span>
-                  <div className="font-semibold text-sm">
-                    {formatCurrency(cost.flights || 0)}
-                  </div>
-                </div>
-                <div>
-                  <span className="text-[var(--color-text-faint)]">
-                    Hotels est.
-                  </span>
-                  <div className="font-semibold text-sm">
-                    {formatCurrency(cost.lodging)}
-                  </div>
-                </div>
-              </>
-            )}
-            <div className="col-span-2 border-t border-[var(--color-border)] pt-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[var(--color-text-muted)]">Per person</span>
-                <span className={`font-bold text-sm ${colors.accent}`}>
-                  {formatCurrency(cost.perPerson)}
-                </span>
-              </div>
+      {/* ── Price footer ───────────────────────────────────── */}
+      <div className="mt-auto border-t border-[var(--color-border)] bg-[var(--color-surface-2)]/60 p-4">
+        <div className="mb-3 flex items-end justify-between">
+          <div>
+            <div className="text-[10px] font-medium uppercase tracking-wide text-[var(--color-text-faint)]">
+              Est. per person
+            </div>
+            <div className="text-xl font-bold">
+              {formatCurrency(cost.perPerson)}
             </div>
           </div>
+          <div className="text-right text-[11px] leading-relaxed text-[var(--color-text-muted)]">
+            <div>
+              {primaryLabel} {formatCurrency(primaryCost || 0)}
+            </div>
+            <div>Lodging {formatCurrency(cost.lodging)}</div>
+          </div>
         </div>
-
-        <button
-          data-testid={`btn-view-${template.id}`}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[var(--color-primary)] text-white text-sm font-medium hover:bg-[var(--color-primary-hover)] transition-colors"
+        <div
+          className={`flex w-full items-center justify-center gap-1.5 rounded-xl bg-[var(--color-primary)] py-2.5 text-sm font-semibold text-white transition-colors group-hover:bg-[var(--color-primary-hover)]`}
         >
-          View Itinerary <ArrowRight size={14} />
-        </button>
+          View Itinerary
+          <ArrowRight
+            size={15}
+            className="transition-transform group-hover:translate-x-0.5"
+          />
+        </div>
       </div>
     </div>
   );

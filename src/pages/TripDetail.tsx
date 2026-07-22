@@ -2009,13 +2009,21 @@ export default function TripDetailPage({
   const mapAccentHex = MAP_ACCENT_HEX[trip.type] || "#d97706";
 
   const headerStats = [
-    {
-      label: isRoadTrip ? "Miles" : "Days",
-      val: isRoadTrip
-        ? (trip.roadTripDays?.reduce((sum, d) => sum + d.miles, 0) || 0).toLocaleString()
-        : String(trip.totalDays),
-    },
     { label: "Days", val: String(trip.totalDays) },
+    isRoadTrip
+      ? {
+          label: "Miles",
+          val: (
+            trip.roadTripDays?.reduce((sum, d) => sum + d.miles, 0) || 0
+          ).toLocaleString(),
+        }
+      : {
+          label: trip.countries.length > 1 ? "Countries" : "Country",
+          val:
+            trip.countries.length > 1
+              ? String(trip.countries.length)
+              : trip.countries[0],
+        },
     {
       label: "Best Time",
       val: trip.bestMonths.split(",")[0].split("–")[0].trim(),
@@ -2146,9 +2154,9 @@ export default function TripDetailPage({
             )}
           </div>
           <div className="flex gap-3 flex-wrap">
-            {headerStats.map((stat) => (
+            {headerStats.map((stat, i) => (
               <div
-                key={stat.label}
+                key={`${stat.label}-${i}`}
                 className="text-center bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl px-4 py-2"
               >
                 <div className={`font-bold text-lg ${accent}`}>{stat.val}</div>
