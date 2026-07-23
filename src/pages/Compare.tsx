@@ -42,24 +42,6 @@ function countStops(trip: Trip): number {
   return trip.tripDays?.reduce((sum, day) => sum + (day.attractions?.length ?? 0), 0) ?? 0;
 }
 
-/** Base badge classes (bundle `Ire` default variant), overridable via className. */
-function Badge({
-  className,
-  children,
-}: {
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div
-      className={`whitespace-nowrap inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors${
-        className ? ` ${className}` : ""
-      }`}
-    >
-      {children}
-    </div>
-  );
-}
 
 /** Bundle `Th`: a labeled cost bar with an accent-colored fill. */
 function CostBar({
@@ -89,45 +71,13 @@ function CostBar({
   );
 }
 
-const WINNER_BADGES: Record<
-  WinnerKey,
-  { label: string; className: string; icon: ReactNode }
-> = {
-  cost: {
-    label: "Cheapest",
-    className:
-      "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/40",
-    icon: <DollarSign size={10} />,
-  },
-  time: {
-    label: "Shortest",
-    className:
-      "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-500/40",
-    icon: <Clock size={10} />,
-  },
-  attractions: {
-    label: "Most Stops",
-    className:
-      "bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-500/20 dark:text-purple-300 dark:border-purple-500/40",
-    icon: <MapPin size={10} />,
-  },
-  difficulty: {
-    label: "Easiest",
-    className:
-      "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40",
-    icon: <Activity size={10} />,
-  },
-};
-
 /** Bundle `pae`: a single trip's comparison column. */
 function ComparisonCard({
   template,
   settings,
-  winners,
 }: {
   template: Trip;
   settings: Settings;
-  winners: WinnerKey[];
 }) {
   const estimate = estimateTripCosts(template, settings);
   const isRoadTrip = !!template.roadTripDays;
@@ -170,13 +120,15 @@ function ComparisonCard({
   return (
     <div className="flex flex-col gap-4">
       <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
-        <div className="flex items-center gap-3 mb-2">
-          <span className="text-2xl">{template.emoji}</span>
-          <div>
-            <h3 className="font-display font-bold text-base leading-tight">
+        <div className="flex items-start gap-3 mb-2">
+          <span className="text-2xl leading-none">{template.emoji}</span>
+          {/* Reserved height keeps side-by-side columns even when names/subtitles
+              wrap to different line counts (especially on narrow screens). */}
+          <div className="min-w-0 min-h-[4.75rem]">
+            <h3 className="font-display font-bold text-base leading-tight line-clamp-2">
               {template.name}
             </h3>
-            <p className="text-xs text-[var(--color-text-muted)]">
+            <p className="mt-1 text-xs leading-snug text-[var(--color-text-muted)] line-clamp-2">
               {template.subtitle}
             </p>
           </div>
@@ -195,21 +147,6 @@ function ComparisonCard({
             <div className="text-xs text-[var(--color-text-muted)]">Per person</div>
           </div>
         </div>
-        {winners.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-3">
-            {winners.map((key) => {
-              const badge = WINNER_BADGES[key];
-              return (
-                <Badge
-                  key={key}
-                  className={`${badge.className} border text-xs flex items-center gap-1`}
-                >
-                  {badge.icon} {badge.label}
-                </Badge>
-              );
-            })}
-          </div>
-        )}
       </div>
 
       <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5 space-y-2.5">
@@ -282,22 +219,6 @@ export default function ComparePage() {
   const hasRoadTrip = selectedTrips.some((trip) => !!trip.roadTripDays);
   const hasFlightTrip = selectedTrips.some((trip) => !trip.roadTripDays);
 
-  function computeWinners(trip: Trip, index: number): WinnerKey[] {
-    const winners: WinnerKey[] = [];
-    const cost = estimates[index].total;
-    const days = trip.totalDays;
-    const stops = countStops(trip);
-    const diff = trip.difficulty?.overall ?? 5;
-    const allCosts = estimates.map((e) => e.total);
-    const allDays = selectedTrips.map((t) => t.totalDays);
-    const allStops = selectedTrips.map(countStops);
-    const allDiff = selectedTrips.map((t) => t.difficulty?.overall ?? 5);
-    if (cost === Math.min(...allCosts)) winners.push("cost");
-    if (days === Math.min(...allDays)) winners.push("time");
-    if (stops === Math.max(...allStops)) winners.push("attractions");
-    if (diff === Math.min(...allDiff) && trip.difficulty) winners.push("difficulty");
-    return winners;
-  }
 
   function addTrip() {
     const available = trips.filter((trip) => !selectedIds.includes(trip.id));
@@ -544,13 +465,8 @@ export default function ComparePage() {
           className="grid gap-4 overflow-x-auto pb-1"
           style={{ gridTemplateColumns: `repeat(${selectedTrips.length}, minmax(min(11rem, 100%), 1fr))` }}
         >
-          {selectedTrips.map((trip, index) => (
-            <ComparisonCard
-              key={trip.id}
-              template={trip}
-              settings={settings}
-              winners={computeWinners(trip, index)}
-            />
+          {selectedTrips.map((trip) => (
+            <ComparisonCard key={trip.id} template={trip} settings={settings} />
           ))}
         </div>
 
