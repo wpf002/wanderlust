@@ -51,13 +51,14 @@ export default function App() {
     });
   }, []);
 
-  // Sync theme with the server-persisted preference (falls back to the
-  // inline-script default set in index.html).
+  // Sync theme with the saved preference: the server value wins, then this
+  // browser's stored choice, otherwise dark (the app's default).
   useEffect(() => {
     apiRequest("GET", "/api/settings/theme")
       .then((r) => r.json())
       .then((r: { value?: string }) => {
-        const dark = (r.value || "light") === "dark";
+        const stored = localStorage.getItem("wanderlust-theme");
+        const dark = (r.value || stored || "dark") === "dark";
         document.documentElement.classList.toggle("dark", dark);
         document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
       })

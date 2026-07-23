@@ -10,8 +10,9 @@
     <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet"/>
     <script>
       (function() {
+        // Dark is the default; only an explicit "light" choice opts out.
         var stored = localStorage.getItem("wanderlust-theme");
-        var d = stored || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        var d = stored === 'light' ? 'light' : 'dark';
         document.documentElement.classList.toggle('dark', d === 'dark');
         document.documentElement.setAttribute('data-theme', d);
       })();
