@@ -204,13 +204,15 @@ export default function DatePollPanel({ plan, me, onPlan, totalDays }: PanelProp
             const everyone = entry?.everyone ?? false;
             const isMine = mine.has(iso);
             const isToday = iso === todayIso;
+            // Days that have already gone aren't answerable: marking yourself
+            // free on one would feed "best windows" a trip nobody can take.
             const isPast = iso < todayIso;
 
             return (
               <button
                 key={iso}
                 onClick={() => void toggleDay(iso)}
-                disabled={!me}
+                disabled={!me || isPast}
                 aria-pressed={isMine}
                 aria-label={`${formatFullDay(iso)} — ${count} available`}
                 title={
@@ -330,7 +332,7 @@ export default function DatePollPanel({ plan, me, onPlan, totalDays }: PanelProp
               return (
                 <li
                   key={w.start}
-                  className="flex flex-wrap items-center gap-x-3 gap-y-2 p-3 rounded-xl bg-[var(--color-surface-offset)] border border-[var(--color-border)]"
+                  className="flex flex-col items-stretch sm:flex-row sm:items-center gap-x-3 gap-y-2 p-3 rounded-xl bg-[var(--color-surface-offset)] border border-[var(--color-border)]"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium">
@@ -369,7 +371,7 @@ export default function DatePollPanel({ plan, me, onPlan, totalDays }: PanelProp
                     <button
                       onClick={() => void setStart(w.start)}
                       disabled={locking}
-                      className="px-3 py-2 rounded-xl bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white text-xs font-semibold transition-colors disabled:opacity-50"
+                      className="w-full sm:w-auto shrink-0 px-3 py-2 rounded-xl bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white text-xs font-semibold transition-colors disabled:opacity-50"
                     >
                       Lock in these dates
                     </button>
