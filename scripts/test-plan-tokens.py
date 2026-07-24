@@ -85,7 +85,6 @@ status, body = req("POST", f"/plans/{code}/members", {"name": "sarah"})
 check("re-joining as 'sarah' (case) → 409", status, 409)
 
 # --- forking gives the forker their own token ------------------------------
-req("PATCH", f"/plans/{code}", {"isPublished": True}, token=will_token)
 status, forked = req("POST", f"/plans/{code}/fork", {"ownerName": "Dana"})
 check("fork returns a token", bool(forked.get("token")), True)
 status, _ = req("POST", f"/plans/{forked['id']}/assignments", {"label": "y"}, token=forked["token"])
@@ -93,5 +92,7 @@ check("forker can write to their copy", status, 200)
 status, _ = req("POST", f"/plans/{forked['id']}/assignments", {"label": "y"}, token=will_token)
 check("source token can't write to the fork", status, 403)
 
-print(f"\n{ok} passed, {fail} failed")
+# The plans this leaves behind are unreachable without their join code, and it
+# never publishes one — nothing it creates shows up on Discover.
+print(f"\n{ok} passed, {fail} failed  (scratch plans: {code}, {forked['id']})")
 sys.exit(1 if fail else 0)
