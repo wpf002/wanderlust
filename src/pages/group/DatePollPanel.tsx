@@ -288,14 +288,16 @@ export default function DatePollPanel({ plan, me, onPlan, totalDays }: PanelProp
                 Departing {formatFullDay(plan.startDate)}
               </div>
             </div>
-            <button
-              onClick={() => void setStart(null)}
-              disabled={locking}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--color-border)] text-xs hover:bg-[var(--color-surface-offset)] transition-colors disabled:opacity-50"
-            >
-              <X size={13} />
-              Clear dates
-            </button>
+            {me && (
+              <button
+                onClick={() => void setStart(null)}
+                disabled={locking}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--color-border)] text-xs hover:bg-[var(--color-surface-offset)] transition-colors disabled:opacity-50"
+              >
+                <X size={13} />
+                Clear dates
+              </button>
+            )}
           </div>
         </section>
       )}
@@ -363,6 +365,7 @@ export default function DatePollPanel({ plan, me, onPlan, totalDays }: PanelProp
                       Locked in
                     </span>
                   ) : (
+                    me && (
                     <button
                       onClick={() => void setStart(w.start)}
                       disabled={locking}
@@ -370,6 +373,7 @@ export default function DatePollPanel({ plan, me, onPlan, totalDays }: PanelProp
                     >
                       Lock in these dates
                     </button>
+                    )
                   )}
                 </li>
               );

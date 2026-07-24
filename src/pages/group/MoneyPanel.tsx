@@ -287,6 +287,7 @@ export default function MoneyPanel({ plan, me, onPlan }: PanelProps) {
       </div>
 
       {/* Add expense ------------------------------------------------- */}
+      {me && (
       <div className={CARD}>
         <h2 className="font-semibold flex items-center gap-2 mb-4">
           <PlusCircle size={16} className="text-[var(--color-primary)]" />
@@ -407,6 +408,7 @@ export default function MoneyPanel({ plan, me, onPlan }: PanelProps) {
           </button>
         </div>
       </div>
+      )}
 
       {/* Expense list ------------------------------------------------ */}
       <div className={CARD}>
@@ -449,6 +451,7 @@ export default function MoneyPanel({ plan, me, onPlan }: PanelProps) {
                   <div className="text-sm font-semibold tabular-nums shrink-0">
                     {exact(e.amount)}
                   </div>
+                  {me && (
                   <button
                     onClick={() => remove(e.id)}
                     disabled={busyId === e.id}
@@ -461,6 +464,7 @@ export default function MoneyPanel({ plan, me, onPlan }: PanelProps) {
                       <Trash2 size={14} />
                     )}
                   </button>
+                  )}
                 </li>
               );
             })}

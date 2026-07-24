@@ -44,7 +44,9 @@ export default function CrewPanel({ plan, me, onPlan }: PanelProps) {
   }
 
   function copyInvite() {
-    const link = `${window.location.origin}/g/${plan.id}`;
+    // `?join=1` marks a real invitation, so the join prompt still appears on a
+    // published plan that strangers can otherwise only fork.
+    const link = `${window.location.origin}/g/${plan.id}?join=1`;
     navigator.clipboard
       ?.writeText(link)
       .then(() => {
@@ -97,7 +99,7 @@ export default function CrewPanel({ plan, me, onPlan }: PanelProps) {
                       )}
                     </div>
                   </div>
-                  {!isMe && (
+                  {me && !isMe && (
                     <button
                       onClick={() =>
                         void run(() => plansApi.removeMember(plan.id, member.id))
@@ -117,7 +119,9 @@ export default function CrewPanel({ plan, me, onPlan }: PanelProps) {
         )}
       </section>
 
-      {/* -------------------------------------------------------- Invite */}
+      {/* Invite — members only, so a published plan doesn't hand its join
+          code to every passer-by on Discover. */}
+      {me && (
       <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
         <h2 className="font-semibold mb-1">Invite the rest</h2>
         <p className="text-sm text-[var(--color-text-muted)] mb-4">
@@ -140,6 +144,7 @@ export default function CrewPanel({ plan, me, onPlan }: PanelProps) {
           </button>
         </div>
       </section>
+      )}
 
       {/* --------------------------------------------------- Assignments */}
       <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
@@ -176,7 +181,7 @@ export default function CrewPanel({ plan, me, onPlan }: PanelProps) {
                   <input
                     type="checkbox"
                     checked={task.done}
-                    disabled={busy}
+                    disabled={busy || !me}
                     onChange={(e) =>
                       void run(() =>
                         plansApi.updateAssignment(plan.id, task.id, {
@@ -202,7 +207,7 @@ export default function CrewPanel({ plan, me, onPlan }: PanelProps) {
                     {assignee && <Avatar member={assignee} size={20} />}
                     <select
                       value={task.assigneeId === null ? "" : String(task.assigneeId)}
-                      disabled={busy}
+                      disabled={busy || !me}
                       onChange={(e) => {
                         const value = e.target.value;
                         void run(() =>
@@ -223,6 +228,7 @@ export default function CrewPanel({ plan, me, onPlan }: PanelProps) {
                       ))}
                     </select>
 
+                    {me && (
                     <button
                       onClick={() =>
                         void run(() =>
@@ -236,6 +242,7 @@ export default function CrewPanel({ plan, me, onPlan }: PanelProps) {
                     >
                       <Trash2 size={14} />
                     </button>
+                    )}
                   </div>
                 </li>
               );
@@ -243,25 +250,31 @@ export default function CrewPanel({ plan, me, onPlan }: PanelProps) {
           </ul>
         )}
 
-        <div className="flex gap-2 flex-wrap">
-          <input
-            value={newLabel}
-            onChange={(e) => setNewLabel(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") addAssignment();
-            }}
-            placeholder="Book the rental car…"
-            className="flex-1 min-w-[12rem] px-3 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
-          />
-          <button
-            onClick={addAssignment}
-            disabled={!newLabel.trim() || busy}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white text-sm font-semibold transition-colors disabled:opacity-50"
-          >
-            <Plus size={15} />
-            Add
-          </button>
-        </div>
+        {me ? (
+          <div className="flex gap-2 flex-wrap">
+            <input
+              value={newLabel}
+              onChange={(e) => setNewLabel(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") addAssignment();
+              }}
+              placeholder="Book the rental car…"
+              className="flex-1 min-w-[12rem] px-3 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
+            />
+            <button
+              onClick={addAssignment}
+              disabled={!newLabel.trim() || busy}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white text-sm font-semibold transition-colors disabled:opacity-50"
+            >
+              <Plus size={15} />
+              Add
+            </button>
+          </div>
+        ) : (
+          <p className="text-xs text-[var(--color-text-faint)]">
+            Only people on this trip can pick up a job.
+          </p>
+        )}
       </section>
     </div>
   );

@@ -5,6 +5,7 @@ import {
   CalendarDays,
   Check,
   Copy,
+  GitFork,
   Globe2,
   ListChecks,
   Loader2,
@@ -59,6 +60,8 @@ export default function GroupPlanPage({ code }: { code: string }) {
   const [blurbOpen, setBlurbOpen] = useState(false);
   const [blurbInput, setBlurbInput] = useState("");
   const [publishing, setPublishing] = useState(false);
+  const [forkName, setForkName] = useState("");
+  const [forking, setForking] = useState(false);
 
   const upper = code.toUpperCase();
 
@@ -81,6 +84,14 @@ export default function GroupPlanPage({ code }: { code: string }) {
 
   const myId = getMyMemberId(upper);
   const me = plan?.members.find((m) => m.id === myId) ?? null;
+  /**
+   * A published plan is linked from Discover, where the intended action is
+   * "fork", not "join" — so only offer to join it to someone who followed a
+   * real invite link. Unpublished plans are reachable only by their code, so
+   * having the link is invitation enough.
+   */
+  const invited = new URLSearchParams(window.location.search).has("join");
+  const canJoin = !me && (invited || !plan?.isPublished);
   const trip = plan ? trips.find((t) => t.id === plan.templateId) : undefined;
   const totalDays = trip?.totalDays ?? 0;
   const tripDay = plan && totalDays ? currentTripDay(plan, totalDays) : null;
@@ -97,6 +108,21 @@ export default function GroupPlanPage({ code }: { code: string }) {
       setPlan(updated);
     } finally {
       setJoining(false);
+    }
+  }
+
+  /** Take a copy of someone else's published trip and land in it. */
+  async function fork() {
+    const owner = forkName.trim();
+    if (!owner || !plan) return;
+    setForking(true);
+    try {
+      const copy = await plansApi.fork(plan.id, owner);
+      const mine = copy.members[0];
+      if (mine) setMyMemberId(copy.id, mine.id);
+      navigate(`/g/${copy.id}`);
+    } finally {
+      setForking(false);
     }
   }
 
@@ -118,7 +144,7 @@ export default function GroupPlanPage({ code }: { code: string }) {
 
   function copyLink() {
     navigator.clipboard
-      ?.writeText(`${window.location.origin}/g/${upper}`)
+      ?.writeText(`${window.location.origin}/g/${upper}?join=1`)
       .then(() => {
         setCopied(true);
         setTimeout(() => setCopied(false), 1800);
@@ -185,6 +211,9 @@ export default function GroupPlanPage({ code }: { code: string }) {
           </p>
         </div>
 
+        {/* The invite code and the publish switch belong to the group, not to
+            whoever happens to have the link. */}
+        {me && (
         <div className="flex flex-col items-stretch gap-2 w-full sm:w-auto">
           <div className="flex items-center gap-2">
             <button
@@ -246,10 +275,11 @@ export default function GroupPlanPage({ code }: { code: string }) {
             </div>
           )}
         </div>
+        )}
       </div>
 
       {/* Join gate — you can look around, but you act as someone */}
-      {!me && (
+      {canJoin && (
         <div className="bg-[var(--color-surface)] border border-[var(--color-primary)]/40 rounded-2xl p-5 mb-6">
           <h2 className="font-semibold mb-1">Join this trip</h2>
           <p className="text-sm text-[var(--color-text-muted)] mb-4">
@@ -269,6 +299,34 @@ export default function GroupPlanPage({ code }: { code: string }) {
               className="px-5 py-2.5 rounded-xl bg-[var(--color-primary)] text-white text-sm font-semibold disabled:opacity-50"
             >
               {joining ? "Joining…" : "I'm in"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Someone else's published trip — you're a spectator until you fork it */}
+      {!me && !canJoin && (
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5 mb-6">
+          <h2 className="font-semibold mb-1">You're looking at someone's trip</h2>
+          <p className="text-sm text-[var(--color-text-muted)] mb-4">
+            Published to Discover, so you can read it all — but only their group
+            can change it. Take a copy and it's yours to edit.
+          </p>
+          <div className="flex gap-2 flex-wrap">
+            <input
+              value={forkName}
+              onChange={(e) => setForkName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && fork()}
+              placeholder="Your name"
+              className="flex-1 min-w-[12rem] px-3 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
+            />
+            <button
+              onClick={fork}
+              disabled={!forkName.trim() || forking}
+              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[var(--color-primary)] text-white text-sm font-semibold disabled:opacity-50"
+            >
+              <GitFork size={15} />
+              {forking ? "Copying…" : "Make my own copy"}
             </button>
           </div>
         </div>

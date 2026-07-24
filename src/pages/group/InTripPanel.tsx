@@ -486,6 +486,7 @@ export default function InTripPanel({ plan, me, onPlan, totalDays }: PanelProps)
           </button>
         </div>
 
+        {me && (
         <div className="mb-4">
           <textarea
             value={text}
@@ -496,8 +497,7 @@ export default function InTripPanel({ plan, me, onPlan, totalDays }: PanelProps)
           />
           <div className="flex items-center justify-between gap-2 mt-2">
             <span className="text-xs text-[var(--color-text-faint)]">
-              Posting to day {selectedDay}
-              {me ? ` as ${me.name}` : " anonymously"}
+              Posting to day {selectedDay} as {me.name}
             </span>
             <button
               onClick={post}
@@ -513,6 +513,7 @@ export default function InTripPanel({ plan, me, onPlan, totalDays }: PanelProps)
             </button>
           </div>
         </div>
+        )}
 
         {error && <p className="text-xs text-rose-500 mb-3">{error}</p>}
 
@@ -550,6 +551,7 @@ export default function InTripPanel({ plan, me, onPlan, totalDays }: PanelProps)
                       {e.text}
                     </p>
                   </div>
+                  {me && (
                   <button
                     onClick={() => removeEntry(e.id)}
                     disabled={busyEntry === e.id}
@@ -562,6 +564,7 @@ export default function InTripPanel({ plan, me, onPlan, totalDays }: PanelProps)
                       <Trash2 size={14} />
                     )}
                   </button>
+                  )}
                 </li>
               );
             })}
