@@ -4,7 +4,6 @@ import {
   GitCompare,
   PlusCircle,
   X,
-  DollarSign,
   Clock,
   MapPin,
   Activity,
@@ -31,8 +30,6 @@ import {
   SelectValue,
 } from "@/components/Select";
 import Slider from "@/components/Slider";
-
-type WinnerKey = "cost" | "time" | "attractions" | "difficulty";
 
 /** Total number of attraction stops across all days of a trip. */
 function countStops(trip: Trip): number {
@@ -238,42 +235,6 @@ export default function ComparePage() {
     setSelectedIds(selectedIds.map((id) => (id === oldId ? newId : id)));
   }
 
-  const summaryMetrics: {
-    key: WinnerKey;
-    label: string;
-    icon: ReactNode;
-    fn: (index: number) => number;
-    pick: "min" | "max";
-  }[] = [
-    {
-      key: "cost",
-      label: "Cheapest",
-      icon: <DollarSign size={13} className="text-emerald-500" />,
-      fn: (index) => estimates[index].total,
-      pick: "min",
-    },
-    {
-      key: "time",
-      label: "Shortest",
-      icon: <Clock size={13} className="text-blue-500" />,
-      fn: (index) => selectedTrips[index].totalDays,
-      pick: "min",
-    },
-    {
-      key: "attractions",
-      label: "Most Stops",
-      icon: <MapPin size={13} className="text-purple-500" />,
-      fn: (index) => countStops(selectedTrips[index]),
-      pick: "max",
-    },
-    {
-      key: "difficulty",
-      label: "Easiest",
-      icon: <Activity size={13} className="text-amber-500" />,
-      fn: (index) => selectedTrips[index].difficulty?.overall ?? 5,
-      pick: "min",
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
@@ -424,42 +385,6 @@ export default function ComparePage() {
           </div>
         </div>
 
-        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5 mb-6">
-          <h3 className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-4">
-            Best-of Summary
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {summaryMetrics.map((metric) => {
-              const values = selectedTrips.map((_, index) => metric.fn(index));
-              const best =
-                metric.pick === "min" ? Math.min(...values) : Math.max(...values);
-              const winner = selectedTrips[values.indexOf(best)];
-              return (
-                <div
-                  key={metric.key}
-                  className="bg-[var(--color-surface-offset)] rounded-xl p-3 flex flex-col gap-1.5"
-                >
-                  <div className="flex items-center gap-1.5 text-[var(--color-text-muted)]">
-                    {metric.icon}
-                    <span className="text-xs font-medium">{metric.label}</span>
-                  </div>
-                  <div className="text-sm font-bold">
-                    {winner.emoji} {winner.name}
-                  </div>
-                  <div className="text-xs text-[var(--color-text-muted)]">
-                    {metric.key === "cost"
-                      ? formatCurrency(best)
-                      : metric.key === "time"
-                        ? `${best} days`
-                        : metric.key === "attractions"
-                          ? `${best} stops`
-                          : `${best.toFixed(1)} / 5`}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
 
         <div
           className="grid gap-4 overflow-x-auto pb-1"

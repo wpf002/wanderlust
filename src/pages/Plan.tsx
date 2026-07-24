@@ -8,6 +8,7 @@ import {
   DollarSign,
   Globe,
   MapPin,
+  PlusCircle,
   Search,
   Sparkles,
   Users,
@@ -130,8 +131,9 @@ export default function PlanPage({
 
   const findTrips = () => {
     setLastForm(form);
-    const matched = matchTemplates(form, trips);
-    setMatches(matched.length > 0 ? matched : trips.slice(0, 3));
+    // Show only genuine matches — padding with unrelated trips is worse than
+    // saying we don't have one for that destination yet.
+    setMatches(matchTemplates(form, trips));
     setShowResults(true);
     setStep(2);
     setSettings({ ...settings, travelers: form.travelers, budget: form.budget });
@@ -439,30 +441,65 @@ export default function PlanPage({
               <div className="flex items-center gap-2">
                 <Sparkles size={16} className="text-[var(--color-primary)]" />
                 <h2 className="font-display font-bold text-lg">
-                  {matches.length > 0
-                    ? `${matches.length} trips match your vibe`
-                    : "Here are our top picks"}
+                  {matches.length === 0
+                    ? "No itinerary matches that yet"
+                    : matches.length === 1
+                      ? "1 trip matches your vibe"
+                      : `${matches.length} trips match your vibe`}
                 </h2>
               </div>
-              <span className="text-xs text-[var(--color-text-faint)] flex items-center gap-1">
-                <CloudSun size={11} /> Expand each for {form.travelMonth} weather
-              </span>
+              {matches.length > 0 && (
+                <span className="text-xs text-[var(--color-text-faint)] flex items-center gap-1">
+                  <CloudSun size={11} /> Expand each for {form.travelMonth} weather
+                </span>
+              )}
             </div>
-            <div className="space-y-4">
-              {matches.map((template, rank) => (
-                <ResultCard
-                  key={template.id}
-                  template={template}
-                  rank={rank}
-                  costs={estimateTripCosts(template, costSettings)}
-                  colors={matchColors(template.type)}
-                  weatherCities={weatherCitiesFor(template, form.destination)}
-                  forecastDate={forecastDate}
-                  travelMonth={form.travelMonth}
-                  onView={() => navigate(`/trip/${template.id}`)}
-                />
-              ))}
-            </div>
+            {matches.length === 0 ? (
+              <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-8 text-center">
+                <p className="text-sm text-[var(--color-text-muted)] max-w-md mx-auto">
+                  We don't have a ready-made itinerary for{" "}
+                  {form.destination.trim() ? (
+                    <span className="font-medium text-[var(--color-text)]">
+                      {form.destination.trim()}
+                    </span>
+                  ) : (
+                    "that combination"
+                  )}{" "}
+                  yet. You can build your own day-by-day trip, or browse the full
+                  collection.
+                </p>
+                <div className="flex items-center justify-center gap-3 mt-5 flex-wrap">
+                  <button
+                    onClick={() => navigate("/create")}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--color-primary)] text-white text-sm font-semibold hover:bg-[var(--color-primary-hover)] transition-colors"
+                  >
+                    <PlusCircle size={15} /> Build This Trip
+                  </button>
+                  <button
+                    onClick={() => navigate("/")}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[var(--color-border)] text-sm font-medium hover:bg-[var(--color-surface-offset)] transition-colors"
+                  >
+                    Browse all trips
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {matches.map((template, rank) => (
+                  <ResultCard
+                    key={template.id}
+                    template={template}
+                    rank={rank}
+                    costs={estimateTripCosts(template, costSettings)}
+                    colors={matchColors(template.type)}
+                    weatherCities={weatherCitiesFor(template, form.destination)}
+                    forecastDate={forecastDate}
+                    travelMonth={form.travelMonth}
+                    onView={() => navigate(`/trip/${template.id}`)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

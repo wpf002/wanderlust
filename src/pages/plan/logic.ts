@@ -1,73 +1,141 @@
 import type { Settings, Trip } from "@/data/types";
 import { DESTINATION_CITY_MAP, MONTHS, type PlanForm } from "@/data/planner";
 
+/** Place keywords that clearly identify a specific template. */
+const DESTINATION_KEYWORDS: ReadonlyArray<[string, readonly string[]]> = [
+  [
+    "italy_west_coast",
+    [
+      "italy", "italian", "tuscany", "tuscan", "amalfi", "cinque terre", "cinque",
+      "rome", "roman", "florence", "firenze", "naples", "napoli", "venice",
+      "milan", "positano", "sorrento", "pompeii", "capri", "sicily",
+    ],
+  ],
+  [
+    "scotland_ireland",
+    [
+      "scotland", "scottish", "ireland", "irish", "dublin", "edinburgh",
+      "highlands", "isle of skye", "skye", "belfast", "galway", "killarney",
+      "celtic", "loch ness", "glencoe",
+    ],
+  ],
+  ["route66", ["route 66", "route66", "mother road"]],
+  [
+    "northern_parks",
+    [
+      "yellowstone", "badlands", "national park", "national parks", "zion",
+      "bryce", "mount rushmore", "rushmore", "grand teton", "teton",
+      "black hills", "devils tower",
+    ],
+  ],
+  [
+    "pacific_coast",
+    [
+      "pacific coast", "pch", "big sur", "highway 1", "california coast",
+      "monterey", "hearst", "redwood", "olympic", "seattle", "portland",
+    ],
+  ],
+  [
+    "gulf_coast",
+    [
+      "gulf coast", "gulf", "new orleans", "nola", "louisiana", "bayou",
+      "cajun", "houston", "dallas", "texas", "pensacola", "panhandle",
+    ],
+  ],
+  [
+    "interstate",
+    ["i-80", "i80", "i-70", "i70", "transcontinental", "cross country", "cross-country"],
+  ],
+];
+
+/** Interest value → keywords matched against a template's tags. */
+const INTEREST_TAG_KEYWORDS: Record<string, readonly string[]> = {
+  history: ["history", "historic", "castles", "unesco", "culture", "celtic"],
+  nature: ["nature", "wildlife", "scenery", "national parks", "hiking", "geysers", "scenic"],
+  food: ["food", "wine", "cajun", "diners", "food scene"],
+  art: ["art", "architecture", "unesco"],
+  beach: ["beach", "beaches", "coastal", "coast"],
+  adventure: ["adventure", "hiking", "sports", "epic scenery"],
+  nightlife: ["pubs", "music", "nightlife", "entertainment"],
+  photography: ["scenic", "scenery", "epic scenery", "coastal"],
+  shopping: ["shopping", "markets", "roadside americana"],
+  wellness: ["wellness", "relaxation", "beaches"],
+};
+
+/** Templates whose place keywords appear in the destination text. */
+function destinationMatches(destination: string, templates: Trip[]): Trip[] {
+  const text = destination.toLowerCase().trim();
+  if (!text) return [];
+  const ids = new Set(
+    DESTINATION_KEYWORDS.filter(([, keywords]) =>
+      keywords.some((k) => text.includes(k)),
+    ).map(([id]) => id),
+  );
+  return templates.filter((t) => ids.has(t.id));
+}
+
+/** How many of the chosen interests this template's tags cover. */
+function interestOverlap(form: PlanForm, template: Trip): number {
+  const tags = template.tags.map((t) => t.toLowerCase());
+  return form.interests.filter((interest) =>
+    (INTEREST_TAG_KEYWORDS[interest] ?? []).some((keyword) =>
+      tags.some((tag) => tag.includes(keyword)),
+    ),
+  ).length;
+}
+
 /**
- * Bundle `jre`: score every trip template against the planner form and return
- * the top 3 matches with a score > 0. Reproduced verbatim.
+ * Match trip templates against the planner form.
  *
- * Scoring:
- *  +10 exact template match (Italy→italy_west_coast, Route 66→route66,
- *      Yellowstone/parks→northern_parks) when the destination text mentions it.
- *  +3  trip-type family match (road_trip / international).
- *  +2  beach/coast intent matching a beach/coast tag.
- *  +2  duration exactly equals the template length, or +1 within 2 days.
+ * Precedence:
+ *  1. If the destination text names a place we have a template for, return only
+ *     those — asking for Tuscany should never surface a Gulf Coast road trip.
+ *  2. If they named a destination we have nothing for, return nothing rather
+ *     than pretending an unrelated country is a match.
+ *  3. With no destination given, filter by trip type (Road Trip / International
+ *     are hard filters) and rank by interest overlap.
+ *
+ * Duration only breaks ties: being close to the requested length is not on its
+ * own a reason to call something a match.
  */
 export function matchTemplates(form: PlanForm, templates: Trip[]): Trip[] {
-  const haystack = (form.destination + " " + form.tripType).toLowerCase();
-  const isItaly =
-    haystack.includes("italy") ||
-    haystack.includes("italian") ||
-    haystack.includes("amalfi") ||
-    haystack.includes("cinque") ||
-    haystack.includes("rome") ||
-    haystack.includes("florence") ||
-    haystack.includes("naples");
-  const isRoute66 =
-    haystack.includes("route 66") ||
-    haystack.includes("mother road") ||
-    haystack.includes("route66");
-  const isParks =
-    haystack.includes("yellowstone") ||
-    haystack.includes("badlands") ||
-    haystack.includes("national park") ||
-    haystack.includes("zion") ||
-    haystack.includes("bryce");
-  const wantsRoadTrip =
-    form.tripType === "road_trip" ||
-    haystack.includes("road trip") ||
-    haystack.includes("drive");
-  const wantsInternational = form.tripType === "international" || isItaly;
-  const wantsBeach =
-    form.tripType === "beach" ||
-    haystack.includes("beach") ||
-    haystack.includes("coast") ||
-    haystack.includes("amalfi");
+  const byDestination = destinationMatches(form.destination, templates);
+  const askedForSomewhere = form.destination.trim().length > 0;
+  if (askedForSomewhere && byDestination.length === 0) return [];
 
-  const scored = templates.map((template) => {
-    let score = 0;
-    if (isItaly && template.id === "italy_west_coast") score += 10;
-    if (isRoute66 && template.id === "route66") score += 10;
-    if (isParks && template.id === "northern_parks") score += 10;
-    if (wantsRoadTrip && template.type === "road_trip") score += 3;
-    if (wantsInternational && template.type === "international") score += 3;
-    if (
-      wantsBeach &&
-      template.tags.some(
-        (tag) =>
-          tag.toLowerCase().includes("beach") ||
-          tag.toLowerCase().includes("coast"),
-      )
-    )
-      score += 2;
+  const pool = byDestination.length > 0 ? byDestination : templates;
+
+  // Trip type is a hard filter only when it maps onto a template family, and
+  // only when the destination hasn't already pinned the answer.
+  const typeFiltered =
+    byDestination.length > 0
+      ? pool
+      : form.tripType === "road_trip"
+        ? pool.filter((t) => t.type === "road_trip")
+        : form.tripType === "international"
+          ? pool.filter((t) => t.type === "international")
+          : pool;
+
+  const scored = typeFiltered.map((template) => {
+    const isDestinationMatch = byDestination.includes(template);
+    const interests = interestOverlap(form, template);
+    // Relevance must come from a real signal — destination, type family, or
+    // shared interests — never from duration alone.
+    let relevance = 0;
+    if (isDestinationMatch) relevance += 10;
+    if (form.tripType === "road_trip" && template.type === "road_trip") relevance += 3;
+    if (form.tripType === "international" && template.type === "international")
+      relevance += 3;
+    relevance += interests * 2;
+
     const dayDelta = Math.abs(template.totalDays - form.duration);
-    if (dayDelta === 0) score += 2;
-    else if (dayDelta <= 2) score += 1;
-    return { template, score };
+    const durationBonus = dayDelta === 0 ? 1 : dayDelta <= 2 ? 0.5 : 0;
+    return { template, relevance, score: relevance + durationBonus };
   });
 
-  scored.sort((a, b) => b.score - a.score);
   return scored
-    .filter((s) => s.score > 0)
+    .filter((s) => s.relevance > 0)
+    .sort((a, b) => b.score - a.score)
     .map((s) => s.template)
     .slice(0, 3);
 }
