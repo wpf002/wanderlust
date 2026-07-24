@@ -17,6 +17,7 @@ import { useTripsData } from "@/data/useTrips";
 import {
   currentTripDay,
   getMyMemberId,
+  getMyToken,
   plansApi,
   setMyMemberId,
   type Plan,
@@ -56,6 +57,7 @@ export default function GroupPlanPage({ code }: { code: string }) {
   const [tab, setTab] = useState<TabId>("crew");
   const [nameInput, setNameInput] = useState("");
   const [joining, setJoining] = useState(false);
+  const [joinError, setJoinError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [blurbOpen, setBlurbOpen] = useState(false);
   const [blurbInput, setBlurbInput] = useState("");
@@ -82,7 +84,9 @@ export default function GroupPlanPage({ code }: { code: string }) {
     };
   }, [upper]);
 
-  const myId = getMyMemberId(upper);
+  // Being "me" means holding this plan's write token, not just remembering an
+  // id — the server won't accept changes without it either way.
+  const myId = getMyToken(upper) ? getMyMemberId(upper) : null;
   const me = plan?.members.find((m) => m.id === myId) ?? null;
   /**
    * A published plan is linked from Discover, where the intended action is
@@ -102,10 +106,19 @@ export default function GroupPlanPage({ code }: { code: string }) {
     const name = nameInput.trim();
     if (!name) return;
     setJoining(true);
+    setJoinError(null);
     try {
-      const { member, plan: updated } = await plansApi.join(upper, name);
-      setMyMemberId(upper, member.id);
+      const { member, token, plan: updated } = await plansApi.join(upper, name);
+      setMyMemberId(upper, member.id, token);
       setPlan(updated);
+    } catch (err) {
+      // A taken name comes back as 409 with a sentence worth showing verbatim.
+      const status = (err as { status?: number })?.status;
+      setJoinError(
+        status === 409 && err instanceof Error
+          ? err.message
+          : "Couldn't join that trip. Try again?",
+      );
     } finally {
       setJoining(false);
     }
@@ -119,7 +132,7 @@ export default function GroupPlanPage({ code }: { code: string }) {
     try {
       const copy = await plansApi.fork(plan.id, owner);
       const mine = copy.members[0];
-      if (mine) setMyMemberId(copy.id, mine.id);
+      if (mine) setMyMemberId(copy.id, mine.id, copy.token);
       navigate(`/g/${copy.id}`);
     } finally {
       setForking(false);
@@ -301,6 +314,9 @@ export default function GroupPlanPage({ code }: { code: string }) {
               {joining ? "Joining…" : "I'm in"}
             </button>
           </div>
+          {joinError && (
+            <p className="text-xs text-rose-500 mt-3">{joinError}</p>
+          )}
         </div>
       )}
 

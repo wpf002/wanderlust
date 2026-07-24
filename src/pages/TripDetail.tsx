@@ -1655,7 +1655,7 @@ function StartGroupPlan({
         settings,
       });
       const me = plan.members[0];
-      if (me) setMyMemberId(plan.id, me.id);
+      if (me) setMyMemberId(plan.id, me.id, plan.token);
       navigate(`/g/${plan.id}`);
     } catch {
       setError("Couldn't start the trip. Try again.");

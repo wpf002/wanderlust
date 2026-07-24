@@ -80,13 +80,23 @@ export interface DiscoverPlan {
 
 const json = <T,>(r: Response) => r.json() as Promise<T>;
 
+/** A plan payload with the one-time write token attached (create / fork only). */
+type PlanWithToken = Plan & { token?: string };
+
+/**
+ * Writes carry this browser's token for that plan; reads don't need one.
+ * `write` looks the token up so no caller has to remember to pass it.
+ */
+const write = (method: string, code: string, path: string, body?: unknown) =>
+  apiRequest(method, path, body, getMyToken(code)).then(json<Plan>);
+
 export const plansApi = {
   create: (body: {
     templateId: string;
     title: string;
     ownerName?: string;
     settings?: Settings;
-  }) => apiRequest("POST", "/api/plans", body).then(json<Plan>),
+  }) => apiRequest("POST", "/api/plans", body).then(json<PlanWithToken>),
 
   get: (code: string) =>
     apiRequest("GET", `/api/plans/${code.toUpperCase()}`).then(json<Plan>),
@@ -100,20 +110,18 @@ export const plansApi = {
       isPublished: boolean;
       blurb: string;
     }>,
-  ) => apiRequest("PATCH", `/api/plans/${code}`, body).then(json<Plan>),
+  ) => write("PATCH", code, `/api/plans/${code}`, body),
 
   join: (code: string, name: string) =>
     apiRequest("POST", `/api/plans/${code.toUpperCase()}/members`, { name }).then(
-      json<{ member: PlanMember; plan: Plan }>,
+      json<{ member: PlanMember; token: string; plan: Plan }>,
     ),
 
   removeMember: (code: string, memberId: number) =>
-    apiRequest("DELETE", `/api/plans/${code}/members/${memberId}`).then(json<Plan>),
+    write("DELETE", code, `/api/plans/${code}/members/${memberId}`),
 
   setAvailability: (code: string, memberId: number, days: string[]) =>
-    apiRequest("PUT", `/api/plans/${code}/availability/${memberId}`, { days }).then(
-      json<Plan>,
-    ),
+    write("PUT", code, `/api/plans/${code}/availability/${memberId}`, { days }),
 
   addExpense: (
     code: string,
@@ -125,37 +133,40 @@ export const plansApi = {
       category?: string;
       dayNumber?: number;
     },
-  ) => apiRequest("POST", `/api/plans/${code}/expenses`, body).then(json<Plan>),
+  ) => write("POST", code, `/api/plans/${code}/expenses`, body),
 
   removeExpense: (code: string, id: number) =>
-    apiRequest("DELETE", `/api/plans/${code}/expenses/${id}`).then(json<Plan>),
+    write("DELETE", code, `/api/plans/${code}/expenses/${id}`),
 
   addAssignment: (
     code: string,
     body: { label: string; category?: string; assigneeId?: number | null },
-  ) => apiRequest("POST", `/api/plans/${code}/assignments`, body).then(json<Plan>),
+  ) => write("POST", code, `/api/plans/${code}/assignments`, body),
 
   updateAssignment: (
     code: string,
     id: number,
     body: Partial<{ assigneeId: number | null; done: boolean; label: string }>,
-  ) => apiRequest("PATCH", `/api/plans/${code}/assignments/${id}`, body).then(json<Plan>),
+  ) => write("PATCH", code, `/api/plans/${code}/assignments/${id}`, body),
 
   removeAssignment: (code: string, id: number) =>
-    apiRequest("DELETE", `/api/plans/${code}/assignments/${id}`).then(json<Plan>),
+    write("DELETE", code, `/api/plans/${code}/assignments/${id}`),
 
+  /** The server stamps the author from the token, so `memberId` isn't sent. */
   addJournal: (
     code: string,
-    body: { memberId?: number | null; dayNumber?: number | null; text: string },
-  ) => apiRequest("POST", `/api/plans/${code}/journal`, body).then(json<Plan>),
+    body: { dayNumber?: number | null; text: string },
+  ) => write("POST", code, `/api/plans/${code}/journal`, body),
 
   removeJournal: (code: string, id: number) =>
-    apiRequest("DELETE", `/api/plans/${code}/journal/${id}`).then(json<Plan>),
+    write("DELETE", code, `/api/plans/${code}/journal/${id}`),
 
   discover: () => apiRequest("GET", "/api/discover").then(json<DiscoverPlan[]>),
 
   fork: (code: string, ownerName?: string) =>
-    apiRequest("POST", `/api/plans/${code}/fork`, { ownerName }).then(json<Plan>),
+    apiRequest("POST", `/api/plans/${code}/fork`, { ownerName }).then(
+      json<PlanWithToken>,
+    ),
 };
 
 /* ------------------------------------------------------------------ */
@@ -307,14 +318,35 @@ export function totalSpent(plan: Plan): number {
 /* ------------------------------------------------------------------ */
 
 const meKey = (code: string) => `plan-me:${code.toUpperCase()}`;
+const tokenKey = (code: string) => `plan-token:${code.toUpperCase()}`;
 
 export function getMyMemberId(code: string): number | null {
   const raw = localStorage.getItem(meKey(code));
   return raw ? Number(raw) : null;
 }
 
-export function setMyMemberId(code: string, memberId: number): void {
+/** This browser's write secret for a plan — sent on every change. */
+export function getMyToken(code: string): string | null {
+  return localStorage.getItem(tokenKey(code));
+}
+
+/**
+ * Remember who this browser is on a trip. The token is what actually grants
+ * write access; without it the member id is just a display hint.
+ */
+export function setMyMemberId(
+  code: string,
+  memberId: number,
+  token?: string,
+): void {
   localStorage.setItem(meKey(code), String(memberId));
+  if (token) localStorage.setItem(tokenKey(code), token);
+}
+
+/** Forget this browser's identity — used when the server no longer accepts it. */
+export function clearMyMembership(code: string): void {
+  localStorage.removeItem(meKey(code));
+  localStorage.removeItem(tokenKey(code));
 }
 
 /** Which day of the trip is today (1-indexed), or null if not underway. */

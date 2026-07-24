@@ -187,7 +187,7 @@ export default function DiscoverPage() {
   async function fork(plan: DiscoverPlan, name: string) {
     const created = await plansApi.fork(plan.id, name);
     const owner = created.members[0];
-    if (owner) setMyMemberId(created.id, owner.id);
+    if (owner) setMyMemberId(created.id, owner.id, created.token);
     navigate(`/g/${created.id}`);
   }
 

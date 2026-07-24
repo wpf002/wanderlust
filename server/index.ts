@@ -505,6 +505,43 @@ function planMembers(planId: string): PlanMemberRow[] {
     .all(planId) as PlanMemberRow[];
 }
 
+/** A member's write secret. Issued once, at join, and never re-sent. */
+function makeMemberToken(): string {
+  return randomBytes(24).toString("base64url");
+}
+
+/**
+ * The member a write request is coming from, or null.
+ *
+ * There are no accounts here: holding a member's token is what it means to be
+ * that member. Reads stay open — anyone with the join code can look.
+ */
+function authMember(req: express.Request, planId: string): PlanMemberRow | null {
+  const header = req.get("x-plan-token");
+  if (!header) return null;
+  return (
+    planMembers(planId).find((m) => m.token !== null && m.token === header) ??
+    null
+  );
+}
+
+/**
+ * Guard for every endpoint that changes a plan. Responds 403 and returns null
+ * when the caller can't prove they're on the trip.
+ */
+function requireMember(
+  req: express.Request,
+  res: express.Response,
+  planId: string,
+): PlanMemberRow | null {
+  const member = authMember(req, planId);
+  if (!member) {
+    res.status(403).json({ error: "Join this trip to change it" });
+    return null;
+  }
+  return member;
+}
+
 /** Full plan payload: everything the group hub needs in one round trip. */
 function planPayload(planId: string) {
   const plan = db.prepare("SELECT * FROM plans WHERE id = ?").get(planId) as
@@ -612,12 +649,16 @@ app.post("/api/plans", (req, res) => {
     now,
   );
 
+  let token: string | undefined;
   if (ownerName) {
+    token = makeMemberToken();
     db.prepare(
-      "INSERT INTO plan_members (plan_id, name, color, joined_at) VALUES (?, ?, ?, ?)",
-    ).run(id, String(ownerName).slice(0, 40), MEMBER_COLORS[0], now);
+      "INSERT INTO plan_members (plan_id, name, color, joined_at, token) VALUES (?, ?, ?, ?, ?)",
+    ).run(id, String(ownerName).slice(0, 40), MEMBER_COLORS[0], now, token);
   }
-  res.json(planPayload(id));
+  // `token` rides along only here, on the response to the browser that created
+  // the plan. It is never part of the plan payload.
+  res.json({ ...planPayload(id), token });
 });
 
 app.get("/api/plans/:id", (req, res) => {
@@ -630,6 +671,7 @@ app.patch("/api/plans/:id", (req, res) => {
   const id = req.params.id.toUpperCase();
   const plan = db.prepare("SELECT id FROM plans WHERE id = ?").get(id);
   if (!plan) return res.status(404).json({ error: "Plan not found" });
+  if (!requireMember(req, res, id)) return;
   const { title, settings, startDate, isPublished, blurb } = req.body ?? {};
   if (title !== undefined)
     db.prepare("UPDATE plans SET title = ? WHERE id = ?").run(title, id);
@@ -663,15 +705,39 @@ app.post("/api/plans/:id/members", (req, res) => {
   const already = existing.find(
     (m) => m.name.toLowerCase() === name.toLowerCase(),
   );
-  if (already) return res.json({ member: { id: already.id, name: already.name, color: already.color }, plan: planPayload(id) });
+
+  if (already) {
+    // A name whose token was already handed out belongs to someone. Letting a
+    // second person "rejoin" as them would hand over their write access.
+    if (already.token) {
+      return res.status(409).json({
+        error: `Someone on this trip already goes by "${already.name}" — pick another name.`,
+      });
+    }
+    // Pre-token member: the first browser to claim the name gets the token.
+    const token = makeMemberToken();
+    db.prepare("UPDATE plan_members SET token = ? WHERE id = ?").run(
+      token,
+      already.id,
+    );
+    return res.json({
+      member: { id: already.id, name: already.name, color: already.color },
+      token,
+      plan: planPayload(id),
+    });
+  }
 
   const color = MEMBER_COLORS[existing.length % MEMBER_COLORS.length];
+  const token = makeMemberToken();
   const info = db
-    .prepare("INSERT INTO plan_members (plan_id, name, color, joined_at) VALUES (?, ?, ?, ?)")
-    .run(id, name, color, new Date().toISOString());
+    .prepare(
+      "INSERT INTO plan_members (plan_id, name, color, joined_at, token) VALUES (?, ?, ?, ?, ?)",
+    )
+    .run(id, name, color, new Date().toISOString(), token);
   touchPlan(id);
   res.json({
     member: { id: Number(info.lastInsertRowid), name, color },
+    token,
     plan: planPayload(id),
   });
 });
@@ -679,6 +745,7 @@ app.post("/api/plans/:id/members", (req, res) => {
 app.delete("/api/plans/:id/members/:memberId", (req, res) => {
   const id = req.params.id.toUpperCase();
   const memberId = Number(req.params.memberId);
+  if (!requireMember(req, res, id)) return;
   db.prepare("DELETE FROM plan_members WHERE plan_id = ? AND id = ?").run(id, memberId);
   db.prepare("DELETE FROM plan_dates WHERE plan_id = ? AND member_id = ?").run(id, memberId);
   touchPlan(id);
@@ -689,6 +756,12 @@ app.delete("/api/plans/:id/members/:memberId", (req, res) => {
 app.put("/api/plans/:id/availability/:memberId", (req, res) => {
   const id = req.params.id.toUpperCase();
   const memberId = Number(req.params.memberId);
+  const me = requireMember(req, res, id);
+  if (!me) return;
+  // You answer the date poll for yourself, not for your friends.
+  if (me.id !== memberId) {
+    return res.status(403).json({ error: "You can only set your own dates" });
+  }
   const days: string[] = Array.isArray(req.body?.days) ? req.body.days : [];
   const tx = db.transaction(() => {
     db.prepare("DELETE FROM plan_dates WHERE plan_id = ? AND member_id = ?").run(id, memberId);
@@ -704,6 +777,7 @@ app.put("/api/plans/:id/availability/:memberId", (req, res) => {
 
 app.post("/api/plans/:id/expenses", (req, res) => {
   const id = req.params.id.toUpperCase();
+  if (!requireMember(req, res, id)) return;
   const { payerId, description, amount, splitIds, category, dayNumber } = req.body ?? {};
   if (!payerId || !description || typeof amount !== "number") {
     return res.status(400).json({ error: "payerId, description and amount are required" });
@@ -727,6 +801,7 @@ app.post("/api/plans/:id/expenses", (req, res) => {
 
 app.delete("/api/plans/:id/expenses/:expenseId", (req, res) => {
   const id = req.params.id.toUpperCase();
+  if (!requireMember(req, res, id)) return;
   db.prepare("DELETE FROM plan_expenses WHERE plan_id = ? AND id = ?").run(
     id,
     Number(req.params.expenseId),
@@ -737,6 +812,7 @@ app.delete("/api/plans/:id/expenses/:expenseId", (req, res) => {
 
 app.post("/api/plans/:id/assignments", (req, res) => {
   const id = req.params.id.toUpperCase();
+  if (!requireMember(req, res, id)) return;
   const { label, category, assigneeId } = req.body ?? {};
   if (!label) return res.status(400).json({ error: "label is required" });
   db.prepare(
@@ -750,6 +826,7 @@ app.post("/api/plans/:id/assignments", (req, res) => {
 app.patch("/api/plans/:id/assignments/:assignmentId", (req, res) => {
   const id = req.params.id.toUpperCase();
   const aid = Number(req.params.assignmentId);
+  if (!requireMember(req, res, id)) return;
   const { assigneeId, done, label } = req.body ?? {};
   if (assigneeId !== undefined)
     db.prepare("UPDATE plan_assignments SET assignee_id = ? WHERE plan_id = ? AND id = ?").run(assigneeId, id, aid);
@@ -763,6 +840,7 @@ app.patch("/api/plans/:id/assignments/:assignmentId", (req, res) => {
 
 app.delete("/api/plans/:id/assignments/:assignmentId", (req, res) => {
   const id = req.params.id.toUpperCase();
+  if (!requireMember(req, res, id)) return;
   db.prepare("DELETE FROM plan_assignments WHERE plan_id = ? AND id = ?").run(
     id,
     Number(req.params.assignmentId),
@@ -773,17 +851,21 @@ app.delete("/api/plans/:id/assignments/:assignmentId", (req, res) => {
 
 app.post("/api/plans/:id/journal", (req, res) => {
   const id = req.params.id.toUpperCase();
-  const { memberId, dayNumber, text } = req.body ?? {};
+  const author = requireMember(req, res, id);
+  if (!author) return;
+  const { dayNumber, text } = req.body ?? {};
   if (!text) return res.status(400).json({ error: "text is required" });
+  // The author is whoever the token says it is — not whoever the body claims.
   db.prepare(
     "INSERT INTO plan_journal (plan_id, member_id, day_number, text, created_at) VALUES (?, ?, ?, ?, ?)",
-  ).run(id, memberId ?? null, dayNumber ?? null, String(text).slice(0, 2000), new Date().toISOString());
+  ).run(id, author.id, dayNumber ?? null, String(text).slice(0, 2000), new Date().toISOString());
   touchPlan(id);
   res.json(planPayload(id));
 });
 
 app.delete("/api/plans/:id/journal/:entryId", (req, res) => {
   const id = req.params.id.toUpperCase();
+  if (!requireMember(req, res, id)) return;
   db.prepare("DELETE FROM plan_journal WHERE plan_id = ? AND id = ?").run(
     id,
     Number(req.params.entryId),
@@ -845,12 +927,14 @@ app.post("/api/plans/:id/fork", (req, res) => {
   db.prepare("UPDATE plans SET fork_count = fork_count + 1 WHERE id = ?").run(sourceId);
 
   const ownerName = String(req.body?.ownerName ?? "").trim().slice(0, 40);
+  let token: string | undefined;
   if (ownerName) {
+    token = makeMemberToken();
     db.prepare(
-      "INSERT INTO plan_members (plan_id, name, color, joined_at) VALUES (?, ?, ?, ?)",
-    ).run(id, ownerName, MEMBER_COLORS[0], now);
+      "INSERT INTO plan_members (plan_id, name, color, joined_at, token) VALUES (?, ?, ?, ?, ?)",
+    ).run(id, ownerName, MEMBER_COLORS[0], now, token);
   }
-  res.json(planPayload(id));
+  res.json({ ...planPayload(id), token });
 });
 
 /* ---------- Custom trips (user-authored templates) ---------- */

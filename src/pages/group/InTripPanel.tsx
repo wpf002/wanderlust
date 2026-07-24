@@ -202,7 +202,6 @@ export default function InTripPanel({ plan, me, onPlan, totalDays }: PanelProps)
     setError(null);
     try {
       const updated = await plansApi.addJournal(plan.id, {
-        memberId: me?.id ?? null,
         dayNumber: selectedDay,
         text: body,
       });

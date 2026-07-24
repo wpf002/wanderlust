@@ -112,7 +112,11 @@ CREATE TABLE IF NOT EXISTS plan_members (
   plan_id   TEXT NOT NULL,
   name      TEXT NOT NULL,
   color     TEXT NOT NULL,
-  joined_at TEXT NOT NULL
+  joined_at TEXT NOT NULL,
+  -- Secret handed to this member's browser when they join. Proves a write
+  -- request comes from someone actually on the trip. Never leaves the server
+  -- except in the one response that issues it.
+  token     TEXT
 );
 
 -- One row per member per date they're available (date poll).
@@ -155,6 +159,23 @@ CREATE TABLE IF NOT EXISTS plan_journal (
   created_at TEXT NOT NULL
 );
 `);
+
+/* ---------- Migrations ---------- */
+
+/**
+ * `CREATE TABLE IF NOT EXISTS` leaves an existing table alone, so columns added
+ * after a deploy have to be patched in by hand. Adding a column is idempotent
+ * here because we check the table's actual shape first.
+ */
+function addColumnIfMissing(table: string, column: string, definition: string) {
+  const columns = db.prepare(`PRAGMA table_info(${table})`).all() as {
+    name: string;
+  }[];
+  if (columns.some((c) => c.name === column)) return;
+  db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+}
+
+addColumnIfMissing("plan_members", "token", "TEXT");
 
 /* ---------- Row types ---------- */
 
@@ -250,6 +271,8 @@ export interface PlanMemberRow {
   name: string;
   color: string;
   joined_at: string;
+  /** Null for members created before tokens existed; see `claimable` in the API. */
+  token: string | null;
 }
 
 export interface PlanDateRow {
