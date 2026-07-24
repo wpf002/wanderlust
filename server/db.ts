@@ -88,6 +88,72 @@ CREATE TABLE IF NOT EXISTS custom_trips (
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
+
+/* ---- Group trip plans ------------------------------------------------
+   A "plan" is one group's instance of a trip: the shared, persistent thing
+   a set of friends coordinates around. Everything below hangs off it. */
+
+CREATE TABLE IF NOT EXISTS plans (
+  id          TEXT PRIMARY KEY,           -- short join code, used in the share URL
+  template_id TEXT NOT NULL,              -- built-in or custom trip id
+  title       TEXT NOT NULL,
+  settings    TEXT NOT NULL,              -- JSON cost settings
+  start_date  TEXT,                       -- chosen departure once locked in
+  is_published INTEGER NOT NULL DEFAULT 0,
+  blurb       TEXT,
+  fork_count  INTEGER NOT NULL DEFAULT 0,
+  forked_from TEXT,
+  created_at  TEXT NOT NULL,
+  updated_at  TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS plan_members (
+  id        INTEGER PRIMARY KEY AUTOINCREMENT,
+  plan_id   TEXT NOT NULL,
+  name      TEXT NOT NULL,
+  color     TEXT NOT NULL,
+  joined_at TEXT NOT NULL
+);
+
+-- One row per member per date they're available (date poll).
+CREATE TABLE IF NOT EXISTS plan_dates (
+  id        INTEGER PRIMARY KEY AUTOINCREMENT,
+  plan_id   TEXT NOT NULL,
+  member_id INTEGER NOT NULL,
+  day       TEXT NOT NULL,
+  UNIQUE (plan_id, member_id, day)
+);
+
+CREATE TABLE IF NOT EXISTS plan_expenses (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  plan_id     TEXT NOT NULL,
+  payer_id    INTEGER NOT NULL,
+  description TEXT NOT NULL,
+  amount_cents INTEGER NOT NULL,
+  split_ids   TEXT NOT NULL,              -- JSON array of member ids sharing it
+  category    TEXT,
+  day_number  INTEGER,
+  created_at  TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS plan_assignments (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  plan_id     TEXT NOT NULL,
+  label       TEXT NOT NULL,
+  category    TEXT NOT NULL DEFAULT 'todo',
+  assignee_id INTEGER,
+  done        INTEGER NOT NULL DEFAULT 0,
+  created_at  TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS plan_journal (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  plan_id    TEXT NOT NULL,
+  member_id  INTEGER,
+  day_number INTEGER,
+  text       TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
 `);
 
 /* ---------- Row types ---------- */
@@ -162,6 +228,66 @@ export interface CustomTripRow {
   data: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface PlanRow {
+  id: string;
+  template_id: string;
+  title: string;
+  settings: string;
+  start_date: string | null;
+  is_published: number;
+  blurb: string | null;
+  fork_count: number;
+  forked_from: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PlanMemberRow {
+  id: number;
+  plan_id: string;
+  name: string;
+  color: string;
+  joined_at: string;
+}
+
+export interface PlanDateRow {
+  id: number;
+  plan_id: string;
+  member_id: number;
+  day: string;
+}
+
+export interface PlanExpenseRow {
+  id: number;
+  plan_id: string;
+  payer_id: number;
+  description: string;
+  amount_cents: number;
+  split_ids: string;
+  category: string | null;
+  day_number: number | null;
+  created_at: string;
+}
+
+export interface PlanAssignmentRow {
+  id: number;
+  plan_id: string;
+  label: string;
+  category: string;
+  assignee_id: number | null;
+  done: number;
+  created_at: string;
+}
+
+export interface PlanJournalRow {
+  id: number;
+  plan_id: string;
+  member_id: number | null;
+  day_number: number | null;
+  text: string;
+  created_at: string;
 }
 
 /* ---------- Helpers ---------- */

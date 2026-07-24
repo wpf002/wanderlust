@@ -13,6 +13,12 @@ import {
   type DayNoteRow,
   type NoteRow,
   type NotifPrefRow,
+  type PlanAssignmentRow,
+  type PlanDateRow,
+  type PlanExpenseRow,
+  type PlanJournalRow,
+  type PlanMemberRow,
+  type PlanRow,
   type RatingRow,
   type SettingRow,
   type TripRow,
@@ -475,6 +481,356 @@ app.get("/api/gas-prices", (_req, res) => {
     northernParksAvg,
     isLive: false,
   });
+});
+
+/* ---------- Group trip plans ---------- */
+
+const MEMBER_COLORS = [
+  "#f59e0b", "#3b82f6", "#10b981", "#8b5cf6",
+  "#ef4444", "#06b6d4", "#ec4899", "#84cc16",
+];
+
+/** Short, unambiguous join code (no 0/O/1/I). */
+function makeJoinCode(): string {
+  const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  let code = "";
+  const bytes = randomBytes(6);
+  for (let i = 0; i < 6; i += 1) code += alphabet[bytes[i] % alphabet.length];
+  return code;
+}
+
+function planMembers(planId: string): PlanMemberRow[] {
+  return db
+    .prepare("SELECT * FROM plan_members WHERE plan_id = ? ORDER BY id ASC")
+    .all(planId) as PlanMemberRow[];
+}
+
+/** Full plan payload: everything the group hub needs in one round trip. */
+function planPayload(planId: string) {
+  const plan = db.prepare("SELECT * FROM plans WHERE id = ?").get(planId) as
+    | PlanRow
+    | undefined;
+  if (!plan) return null;
+  const members = planMembers(planId);
+  const dates = db
+    .prepare("SELECT * FROM plan_dates WHERE plan_id = ?")
+    .all(planId) as PlanDateRow[];
+  const expenses = db
+    .prepare("SELECT * FROM plan_expenses WHERE plan_id = ? ORDER BY id DESC")
+    .all(planId) as PlanExpenseRow[];
+  const assignments = db
+    .prepare("SELECT * FROM plan_assignments WHERE plan_id = ? ORDER BY id ASC")
+    .all(planId) as PlanAssignmentRow[];
+  const journal = db
+    .prepare("SELECT * FROM plan_journal WHERE plan_id = ? ORDER BY id DESC")
+    .all(planId) as PlanJournalRow[];
+
+  return {
+    id: plan.id,
+    templateId: plan.template_id,
+    title: plan.title,
+    settings: JSON.parse(plan.settings),
+    startDate: plan.start_date,
+    isPublished: !!plan.is_published,
+    blurb: plan.blurb,
+    forkCount: plan.fork_count,
+    forkedFrom: plan.forked_from,
+    createdAt: plan.created_at,
+    members: members.map((m) => ({
+      id: m.id,
+      name: m.name,
+      color: m.color,
+      joinedAt: m.joined_at,
+    })),
+    availability: dates.map((d) => ({ memberId: d.member_id, day: d.day })),
+    expenses: expenses.map((e) => ({
+      id: e.id,
+      payerId: e.payer_id,
+      description: e.description,
+      amount: e.amount_cents / 100,
+      splitIds: JSON.parse(e.split_ids) as number[],
+      category: e.category,
+      dayNumber: e.day_number,
+      createdAt: e.created_at,
+    })),
+    assignments: assignments.map((a) => ({
+      id: a.id,
+      label: a.label,
+      category: a.category,
+      assigneeId: a.assignee_id,
+      done: !!a.done,
+    })),
+    journal: journal.map((j) => ({
+      id: j.id,
+      memberId: j.member_id,
+      dayNumber: j.day_number,
+      text: j.text,
+      createdAt: j.created_at,
+    })),
+  };
+}
+
+function touchPlan(planId: string) {
+  db.prepare("UPDATE plans SET updated_at = ? WHERE id = ?").run(
+    new Date().toISOString(),
+    planId,
+  );
+}
+
+// Create a plan (optionally seeding the creator as the first member).
+app.post("/api/plans", (req, res) => {
+  const { templateId, title, settings, ownerName } = req.body ?? {};
+  if (!templateId || !title) {
+    return res.status(400).json({ error: "templateId and title are required" });
+  }
+  const now = new Date().toISOString();
+  let id = makeJoinCode();
+  while (db.prepare("SELECT id FROM plans WHERE id = ?").get(id)) id = makeJoinCode();
+
+  db.prepare(
+    `INSERT INTO plans (id, template_id, title, settings, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+  ).run(id, templateId, title, JSON.stringify(settings ?? {}), now, now);
+
+  if (ownerName) {
+    db.prepare(
+      "INSERT INTO plan_members (plan_id, name, color, joined_at) VALUES (?, ?, ?, ?)",
+    ).run(id, String(ownerName).slice(0, 40), MEMBER_COLORS[0], now);
+  }
+  res.json(planPayload(id));
+});
+
+app.get("/api/plans/:id", (req, res) => {
+  const payload = planPayload(req.params.id.toUpperCase());
+  if (!payload) return res.status(404).json({ error: "Plan not found" });
+  res.json(payload);
+});
+
+app.patch("/api/plans/:id", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  const plan = db.prepare("SELECT id FROM plans WHERE id = ?").get(id);
+  if (!plan) return res.status(404).json({ error: "Plan not found" });
+  const { title, settings, startDate, isPublished, blurb } = req.body ?? {};
+  if (title !== undefined)
+    db.prepare("UPDATE plans SET title = ? WHERE id = ?").run(title, id);
+  if (settings !== undefined)
+    db.prepare("UPDATE plans SET settings = ? WHERE id = ?").run(
+      JSON.stringify(settings),
+      id,
+    );
+  if (startDate !== undefined)
+    db.prepare("UPDATE plans SET start_date = ? WHERE id = ?").run(startDate, id);
+  if (isPublished !== undefined)
+    db.prepare("UPDATE plans SET is_published = ? WHERE id = ?").run(
+      isPublished ? 1 : 0,
+      id,
+    );
+  if (blurb !== undefined)
+    db.prepare("UPDATE plans SET blurb = ? WHERE id = ?").run(blurb, id);
+  touchPlan(id);
+  res.json(planPayload(id));
+});
+
+// Join a plan by name — no account required, which is the whole point.
+app.post("/api/plans/:id/members", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  if (!db.prepare("SELECT id FROM plans WHERE id = ?").get(id))
+    return res.status(404).json({ error: "Plan not found" });
+  const name = String(req.body?.name ?? "").trim().slice(0, 40);
+  if (!name) return res.status(400).json({ error: "name is required" });
+
+  const existing = planMembers(id);
+  const already = existing.find(
+    (m) => m.name.toLowerCase() === name.toLowerCase(),
+  );
+  if (already) return res.json({ member: { id: already.id, name: already.name, color: already.color }, plan: planPayload(id) });
+
+  const color = MEMBER_COLORS[existing.length % MEMBER_COLORS.length];
+  const info = db
+    .prepare("INSERT INTO plan_members (plan_id, name, color, joined_at) VALUES (?, ?, ?, ?)")
+    .run(id, name, color, new Date().toISOString());
+  touchPlan(id);
+  res.json({
+    member: { id: Number(info.lastInsertRowid), name, color },
+    plan: planPayload(id),
+  });
+});
+
+app.delete("/api/plans/:id/members/:memberId", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  const memberId = Number(req.params.memberId);
+  db.prepare("DELETE FROM plan_members WHERE plan_id = ? AND id = ?").run(id, memberId);
+  db.prepare("DELETE FROM plan_dates WHERE plan_id = ? AND member_id = ?").run(id, memberId);
+  touchPlan(id);
+  res.json(planPayload(id));
+});
+
+// Replace one member's availability in a single call.
+app.put("/api/plans/:id/availability/:memberId", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  const memberId = Number(req.params.memberId);
+  const days: string[] = Array.isArray(req.body?.days) ? req.body.days : [];
+  const tx = db.transaction(() => {
+    db.prepare("DELETE FROM plan_dates WHERE plan_id = ? AND member_id = ?").run(id, memberId);
+    const insert = db.prepare(
+      "INSERT OR IGNORE INTO plan_dates (plan_id, member_id, day) VALUES (?, ?, ?)",
+    );
+    for (const day of days) insert.run(id, memberId, String(day).slice(0, 10));
+  });
+  tx();
+  touchPlan(id);
+  res.json(planPayload(id));
+});
+
+app.post("/api/plans/:id/expenses", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  const { payerId, description, amount, splitIds, category, dayNumber } = req.body ?? {};
+  if (!payerId || !description || typeof amount !== "number") {
+    return res.status(400).json({ error: "payerId, description and amount are required" });
+  }
+  db.prepare(
+    `INSERT INTO plan_expenses (plan_id, payer_id, description, amount_cents, split_ids, category, day_number, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(
+    id,
+    payerId,
+    String(description).slice(0, 120),
+    Math.round(amount * 100),
+    JSON.stringify(Array.isArray(splitIds) ? splitIds : []),
+    category ?? null,
+    dayNumber ?? null,
+    new Date().toISOString(),
+  );
+  touchPlan(id);
+  res.json(planPayload(id));
+});
+
+app.delete("/api/plans/:id/expenses/:expenseId", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  db.prepare("DELETE FROM plan_expenses WHERE plan_id = ? AND id = ?").run(
+    id,
+    Number(req.params.expenseId),
+  );
+  touchPlan(id);
+  res.json(planPayload(id));
+});
+
+app.post("/api/plans/:id/assignments", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  const { label, category, assigneeId } = req.body ?? {};
+  if (!label) return res.status(400).json({ error: "label is required" });
+  db.prepare(
+    `INSERT INTO plan_assignments (plan_id, label, category, assignee_id, created_at)
+     VALUES (?, ?, ?, ?, ?)`,
+  ).run(id, String(label).slice(0, 120), category ?? "todo", assigneeId ?? null, new Date().toISOString());
+  touchPlan(id);
+  res.json(planPayload(id));
+});
+
+app.patch("/api/plans/:id/assignments/:assignmentId", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  const aid = Number(req.params.assignmentId);
+  const { assigneeId, done, label } = req.body ?? {};
+  if (assigneeId !== undefined)
+    db.prepare("UPDATE plan_assignments SET assignee_id = ? WHERE plan_id = ? AND id = ?").run(assigneeId, id, aid);
+  if (done !== undefined)
+    db.prepare("UPDATE plan_assignments SET done = ? WHERE plan_id = ? AND id = ?").run(done ? 1 : 0, id, aid);
+  if (label !== undefined)
+    db.prepare("UPDATE plan_assignments SET label = ? WHERE plan_id = ? AND id = ?").run(label, id, aid);
+  touchPlan(id);
+  res.json(planPayload(id));
+});
+
+app.delete("/api/plans/:id/assignments/:assignmentId", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  db.prepare("DELETE FROM plan_assignments WHERE plan_id = ? AND id = ?").run(
+    id,
+    Number(req.params.assignmentId),
+  );
+  touchPlan(id);
+  res.json(planPayload(id));
+});
+
+app.post("/api/plans/:id/journal", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  const { memberId, dayNumber, text } = req.body ?? {};
+  if (!text) return res.status(400).json({ error: "text is required" });
+  db.prepare(
+    "INSERT INTO plan_journal (plan_id, member_id, day_number, text, created_at) VALUES (?, ?, ?, ?, ?)",
+  ).run(id, memberId ?? null, dayNumber ?? null, String(text).slice(0, 2000), new Date().toISOString());
+  touchPlan(id);
+  res.json(planPayload(id));
+});
+
+app.delete("/api/plans/:id/journal/:entryId", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  db.prepare("DELETE FROM plan_journal WHERE plan_id = ? AND id = ?").run(
+    id,
+    Number(req.params.entryId),
+  );
+  touchPlan(id);
+  res.json(planPayload(id));
+});
+
+/* ---------- Discover: published plans ---------- */
+
+app.get("/api/discover", (_req, res) => {
+  const rows = db
+    .prepare(
+      `SELECT p.*, (SELECT COUNT(*) FROM plan_members m WHERE m.plan_id = p.id) AS member_count
+       FROM plans p WHERE p.is_published = 1 ORDER BY p.updated_at DESC LIMIT 60`,
+    )
+    .all() as (PlanRow & { member_count: number })[];
+  res.json(
+    rows.map((p) => ({
+      id: p.id,
+      templateId: p.template_id,
+      title: p.title,
+      blurb: p.blurb,
+      settings: JSON.parse(p.settings),
+      startDate: p.start_date,
+      forkCount: p.fork_count,
+      memberCount: p.member_count,
+      updatedAt: p.updated_at,
+    })),
+  );
+});
+
+// Fork a published plan into a fresh one you own.
+app.post("/api/plans/:id/fork", (req, res) => {
+  const sourceId = req.params.id.toUpperCase();
+  const source = db.prepare("SELECT * FROM plans WHERE id = ?").get(sourceId) as
+    | PlanRow
+    | undefined;
+  if (!source) return res.status(404).json({ error: "Plan not found" });
+
+  const now = new Date().toISOString();
+  let id = makeJoinCode();
+  while (db.prepare("SELECT id FROM plans WHERE id = ?").get(id)) id = makeJoinCode();
+
+  db.prepare(
+    `INSERT INTO plans (id, template_id, title, settings, forked_from, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  ).run(id, source.template_id, source.title, source.settings, sourceId, now, now);
+
+  // Carry over the itinerary scaffolding (assignments), not the group's people or money.
+  const assignments = db
+    .prepare("SELECT label, category FROM plan_assignments WHERE plan_id = ?")
+    .all(sourceId) as { label: string; category: string }[];
+  const insert = db.prepare(
+    "INSERT INTO plan_assignments (plan_id, label, category, created_at) VALUES (?, ?, ?, ?)",
+  );
+  for (const a of assignments) insert.run(id, a.label, a.category, now);
+
+  db.prepare("UPDATE plans SET fork_count = fork_count + 1 WHERE id = ?").run(sourceId);
+
+  const ownerName = String(req.body?.ownerName ?? "").trim().slice(0, 40);
+  if (ownerName) {
+    db.prepare(
+      "INSERT INTO plan_members (plan_id, name, color, joined_at) VALUES (?, ?, ?, ?)",
+    ).run(id, ownerName, MEMBER_COLORS[0], now);
+  }
+  res.json(planPayload(id));
 });
 
 /* ---------- Custom trips (user-authored templates) ---------- */
