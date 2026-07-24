@@ -56,6 +56,7 @@ import type {
 } from "@/data/types";
 import { useTripsData } from "@/data/useTrips";
 import { geocodeCity } from "@/lib/geocode";
+import { plansApi, setMyMemberId } from "@/lib/plans";
 import {
   estimateTripCosts,
   formatCurrency,
@@ -1623,6 +1624,74 @@ function ExportItinerary({ template, settings }: { template: Trip; settings: Set
 }
 
 /** Bundle `Qre`: save the current settings and get shareable links. */
+/**
+ * Entry point into the group flow: spin up a shared plan for this itinerary
+ * and hand back a join code friends can use without making an account.
+ */
+function StartGroupPlan({
+  templateId,
+  templateName,
+  settings,
+}: {
+  templateId: string;
+  templateName: string;
+  settings: Settings;
+}) {
+  const [, navigate] = useLocation();
+  const [name, setName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function start() {
+    const owner = name.trim();
+    if (!owner) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const plan = await plansApi.create({
+        templateId,
+        title: `${templateName} with friends`,
+        ownerName: owner,
+        settings,
+      });
+      const me = plan.members[0];
+      if (me) setMyMemberId(plan.id, me.id);
+      navigate(`/g/${plan.id}`);
+    } catch {
+      setError("Couldn't start the trip. Try again.");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="bg-[var(--color-surface)] border border-[var(--color-primary)]/40 rounded-2xl p-5">
+      <h3 className="font-semibold text-sm mb-1.5 flex items-center gap-2">
+        <Users size={14} className="text-[var(--color-primary)]" /> Plan with friends
+      </h3>
+      <p className="text-xs text-[var(--color-text-muted)] mb-4 leading-relaxed">
+        Get a link your group joins with one tap — vote on dates, split the costs,
+        and split up who's booking what. No accounts.
+      </p>
+      <input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && start()}
+        placeholder="Your name"
+        className="w-full mb-2 px-3 py-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
+      />
+      <button
+        onClick={start}
+        disabled={!name.trim() || busy}
+        data-testid="start-group-plan"
+        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[var(--color-primary)] text-white text-sm font-semibold hover:bg-[var(--color-primary-hover)] transition-colors disabled:opacity-50"
+      >
+        <Users size={14} /> {busy ? "Setting up…" : "Start a group trip"}
+      </button>
+      {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
+    </div>
+  );
+}
+
 function ShareTrip({
   templateId,
   templateName,
@@ -2454,6 +2523,12 @@ export default function TripDetailPage({
                 </button>
               </div>
             </div>
+
+            <StartGroupPlan
+              templateId={templateId}
+              templateName={trip.name}
+              settings={settings}
+            />
 
             <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
               <h3 className="font-semibold text-sm mb-4 flex items-center gap-2">

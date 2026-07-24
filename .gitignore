@@ -9,3 +9,6 @@ server/*.db-wal
 server/*.db-shm
 server/*.db-journal
 *.log
+
+# TypeScript incremental build cache
+*.tsbuildinfo

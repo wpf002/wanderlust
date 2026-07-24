@@ -577,6 +577,19 @@ function touchPlan(planId: string) {
   );
 }
 
+/**
+ * Mirrors DEFAULT_SETTINGS on the client. A plan always stores a complete
+ * settings object so cost estimates never see missing fields.
+ */
+const PLAN_DEFAULT_SETTINGS = {
+  budget: "midrange",
+  travelers: 2,
+  mpg: 28,
+  gasPrice: 3.85,
+  flightCost: 1100,
+  departingCity: "Chicago, IL",
+};
+
 // Create a plan (optionally seeding the creator as the first member).
 app.post("/api/plans", (req, res) => {
   const { templateId, title, settings, ownerName } = req.body ?? {};
@@ -590,7 +603,14 @@ app.post("/api/plans", (req, res) => {
   db.prepare(
     `INSERT INTO plans (id, template_id, title, settings, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?)`,
-  ).run(id, templateId, title, JSON.stringify(settings ?? {}), now, now);
+  ).run(
+    id,
+    templateId,
+    title,
+    JSON.stringify({ ...PLAN_DEFAULT_SETTINGS, ...(settings ?? {}) }),
+    now,
+    now,
+  );
 
   if (ownerName) {
     db.prepare(

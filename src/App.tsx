@@ -10,6 +10,8 @@ import {
 import ExplorePage from "./pages/Explore";
 import PlanPage from "./pages/Plan";
 import CreateTripPage from "./pages/CreateTrip";
+import GroupPlanPage from "./pages/GroupPlan";
+import DiscoverPage from "./pages/Discover";
 import TripDetailPage from "./pages/TripDetail";
 import PackingPage from "./pages/Packing";
 import ComparePage from "./pages/Compare";
@@ -98,6 +100,12 @@ export default function App() {
         </Route>
         <Route path="/create/:id">
           {(params) => <CreateTripPage editId={params.id} />}
+        </Route>
+        <Route path="/g/:code">
+          {(params) => <GroupPlanPage code={params.code || ""} />}
+        </Route>
+        <Route path="/discover">
+          <DiscoverPage />
         </Route>
         <Route path="/packing">
           <PackingPage />

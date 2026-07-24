@@ -9,6 +9,7 @@ import {
   Menu,
   Package,
   SquareCheckBig,
+  Telescope,
   TrendingUp,
   X,
 } from "lucide-react";
@@ -23,6 +24,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { path: "/", label: "Explore", icon: <Compass size={15} /> },
   { path: "/plan", label: "Plan", icon: <CirclePlus size={15} /> },
+  { path: "/discover", label: "Discover", icon: <Telescope size={15} /> },
   { path: "/compare", label: "Compare", icon: <ChartColumn size={15} /> },
   { path: "/dashboard", label: "Spending", icon: <TrendingUp size={15} /> },
   { path: "/notes", label: "Journal", icon: <BookOpen size={15} /> },
