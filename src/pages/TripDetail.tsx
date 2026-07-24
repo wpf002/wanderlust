@@ -1199,17 +1199,25 @@ function CostBreakdown({
           <div className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">
             Flight Estimates (R/T per person)
           </div>
-          {Object.entries(template.flightEstimate).map(([key, value]) => (
-            <div
-              key={key}
-              className="flex justify-between text-xs py-1.5 border-b border-[var(--color-divider)] last:border-0"
-            >
-              <span className="text-[var(--color-text-muted)] capitalize">
-                {key.replace("from", "From ")}
-              </span>
-              <span className="font-medium">{value}</span>
-            </div>
-          ))}
+          {/* `notes` is prose, not a fare — a price row can't hold a paragraph. */}
+          {Object.entries(template.flightEstimate)
+            .filter(([key]) => key !== "notes")
+            .map(([key, value]) => (
+              <div
+                key={key}
+                className="flex justify-between gap-3 text-xs py-1.5 border-b border-[var(--color-divider)] last:border-0"
+              >
+                <span className="text-[var(--color-text-muted)] capitalize">
+                  {key.replace("from", "From ")}
+                </span>
+                <span className="font-medium">{value}</span>
+              </div>
+            ))}
+          {template.flightEstimate.notes && (
+            <p className="text-xs text-[var(--color-text-muted)] leading-relaxed mt-3">
+              {template.flightEstimate.notes}
+            </p>
+          )}
         </div>
       )}
     </div>
