@@ -238,5 +238,9 @@
   "Dublin": {
     "lat": 53.33,
     "lng": -6.25
+  },
+  "Santa Teresa, Costa Rica": {
+    "lat": 9.644,
+    "lng": -85.168
   }
 }

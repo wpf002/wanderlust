@@ -4136,5 +4136,2052 @@
         ]
       }
     ]
+  },
+  {
+    "id": "japan_highlights",
+    "name": "Japan: Tokyo to Osaka",
+    "subtitle": "Neon nights, temple mornings, and the bullet train between",
+    "emoji": "🗾",
+    "type": "international",
+    "primaryTransport": "mixed",
+    "totalDays": 10,
+    "countries": [
+      "Japan"
+    ],
+    "currency": "JPY",
+    "bestMonths": "Late March–April (cherry blossoms), October–November (autumn colors)",
+    "flightEstimate": {
+      "fromNYC": "$900-1400",
+      "fromChicago": "$950-1450",
+      "fromLA": "$700-1100",
+      "fromDallas": "$950-1400",
+      "notes": "West Coast departures are meaningfully cheaper. Fly into Tokyo (HND is closer to the city than NRT) and home out of Osaka (KIX) to avoid backtracking — most airlines price this 'multi-city' the same as a round trip. Cherry-blossom season (late March–early April) books out months ahead."
+    },
+    "dailyBudgets": {
+      "budget": {
+        "perPersonPerDay": 95,
+        "label": "Budget",
+        "includes": "Hostel dorm or capsule hotel ($28-45/night), konbini breakfasts, ramen and donburi shops, IC card for local transit, mostly free shrines and parks",
+        "breakdown": {
+          "accommodation": "$28-45",
+          "meals": "$25-35",
+          "localTransport": "$8-12",
+          "activitiesEntrance": "$8-15",
+          "misc": "$8-12"
+        }
+      },
+      "midrange": {
+        "perPersonPerDay": 200,
+        "label": "Mid-range",
+        "includes": "3-star business hotel or a night in a ryokan ($110-180), izakaya dinners, sushi counters, all major attractions, reserved shinkansen seats",
+        "breakdown": {
+          "accommodation": "$110-180",
+          "meals": "$50-70",
+          "localTransport": "$12-18",
+          "activitiesEntrance": "$15-25",
+          "misc": "$15-25"
+        }
+      },
+      "premium": {
+        "perPersonPerDay": 400,
+        "label": "Premium",
+        "includes": "Design hotels and a kaiseki ryokan with private onsen ($280-450), omakase sushi, private guides, green-car shinkansen"
+      }
+    },
+    "transportNotes": "Skip the nationwide JR Pass unless you're adding side trips — since the 2023 price rise it rarely pays off for a simple Tokyo→Kyoto→Osaka run. Buy individual shinkansen tickets instead and get a Suica or ICOCA IC card (or add one to Apple Wallet) for metros, buses, and convenience stores. Trains leave to the minute; reserve seats in cherry-blossom and autumn seasons. Ship luggage between cities with takkyubin (~$15/bag) so you're not hauling suitcases up station stairs.",
+    "highlights": [
+      "Shibuya Crossing",
+      "Fushimi Inari",
+      "Dotonbori nightlife",
+      "Nara deer park"
+    ],
+    "tags": [
+      "City",
+      "Food Scene",
+      "Nightlife",
+      "Temples",
+      "Trains",
+      "International"
+    ],
+    "difficulty": {
+      "driveIntensity": 1,
+      "physicalActivity": 3,
+      "planningComplexity": 3,
+      "overall": 2.7
+    },
+    "tripDays": [
+      {
+        "day": 1,
+        "location": "Tokyo (Shinjuku)",
+        "from": "Land at Haneda (HND) → Tokyo Monorail or Keikyu line into the city",
+        "travelMethod": "flight + train",
+        "travelTime": "~45 min from Haneda to Shinjuku",
+        "overnight": "Shinjuku or Shibuya",
+        "hotelPriceRange": "$45-190",
+        "hotels": [
+          {
+            "name": "UNPLAN Shinjuku",
+            "location": "Shinjuku",
+            "description": "Bright, sociable hostel with a ground-floor bar that draws as many locals as travelers — the easiest place in Tokyo to fall in with other travelers on night one.",
+            "priceRange": "$35-55/night",
+            "category": "hostel"
+          },
+          {
+            "name": "Hotel Gracery Shinjuku",
+            "location": "Kabukicho, Shinjuku",
+            "description": "Reliable mid-range tower with the giant Godzilla head on its terrace, two minutes from the Kabukicho neon and the JR station.",
+            "priceRange": "$130-190/night",
+            "category": "mid-range",
+            "stars": 4
+          },
+          {
+            "name": "Nine Hours Shinjuku-North",
+            "location": "Shinjuku",
+            "description": "Design-forward capsule hotel — a genuinely comfortable and very Japanese budget experience, not just a cheap bed.",
+            "priceRange": "$40-60/night",
+            "category": "capsule"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Shibuya Crossing & Shibuya Sky",
+            "description": "The world's busiest pedestrian scramble, best seen from above. Shibuya Sky's open-air rooftop deck at 229m is the single best sunset view in the city — book a timed slot online, they sell out.",
+            "hours": "Shibuya Sky 10:00–22:30 (last entry 21:20)",
+            "price": "¥2,500-3,000 (~$17-20) for Shibuya Sky",
+            "category": "city",
+            "duration": "2 hours"
+          },
+          {
+            "name": "Golden Gai & Omoide Yokocho",
+            "description": "Six alleys of tiny post-war bars in Shinjuku, most seating six people. Many welcome foreigners; look for English signs or a posted cover charge (¥500-1,000). Omoide Yokocho next door is the smoky yakitori equivalent.",
+            "hours": "Most bars 20:00–late",
+            "price": "Cover ¥500-1,000 + drinks",
+            "category": "nightlife",
+            "duration": "Evening"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Ichiran Shinjuku",
+            "description": "Solo ramen booths where you order by paper form and never speak to anyone — a genuinely useful first-night meal when you're jet-lagged and can't read a menu.",
+            "priceRange": "$",
+            "cuisine": "Tonkotsu ramen"
+          },
+          {
+            "name": "Omoide Yokocho yakitori stalls",
+            "description": "Grilled skewers and cold beer elbow-to-elbow under the train tracks. Cash is king in the older stalls.",
+            "priceRange": "$$",
+            "cuisine": "Yakitori"
+          }
+        ],
+        "tips": "Get a Suica card into Apple Wallet before you land — you can top it up with a US card and tap straight onto the metro. Jet lag works in your favor here: everyone is up at 5am, so use day one for the Tsukiji outer market and save nightlife for day two."
+      },
+      {
+        "day": 2,
+        "location": "Tokyo (Asakusa & Akihabara)",
+        "from": "Within Tokyo by metro",
+        "travelMethod": "walking / metro",
+        "travelTime": "N/A",
+        "overnight": "Shinjuku or Shibuya",
+        "hotelPriceRange": "$45-190",
+        "hotels": [
+          {
+            "name": "Same as previous night",
+            "location": "Tokyo",
+            "description": "Stay put — Tokyo rewards having one base and using the metro.",
+            "priceRange": "$45-190/night",
+            "category": "mid-range"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Senso-ji Temple, Asakusa",
+            "description": "Tokyo's oldest temple, approached through the lantern-hung Nakamise shopping street. Go at 7am for the shot without crowds, or after dark when the gate is lit and the street is empty.",
+            "hours": "Temple grounds 24h; main hall 6:00–17:00",
+            "price": "Free",
+            "category": "temple",
+            "duration": "1.5 hours"
+          },
+          {
+            "name": "teamLab Planets or Borderless",
+            "description": "Immersive digital art you walk through barefoot, ankle-deep in water. Wildly photogenic and genuinely disorienting in a good way. Timed tickets only, and they sell out a week ahead.",
+            "hours": "9:00–22:00 (varies)",
+            "price": "¥3,800 (~$25)",
+            "category": "art",
+            "duration": "2 hours"
+          },
+          {
+            "name": "Akihabara Electric Town",
+            "description": "Multi-floor arcades, retro game shops, and anime superstores. Even with zero interest in anime, the eight-storey Super Potato retro arcade is worth the climb.",
+            "hours": "Most shops 11:00–20:00",
+            "price": "Free to browse",
+            "category": "city",
+            "duration": "2-3 hours"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Tsukiji Outer Market",
+            "description": "The wholesale market moved to Toyosu, but the outer market is still the best breakfast in Tokyo — tamagoyaki on a stick, uni, and fresh oysters from 7am.",
+            "priceRange": "$$",
+            "cuisine": "Seafood"
+          }
+        ],
+        "tips": "Tokyo's metro is two competing systems (Tokyo Metro and Toei) plus JR. Your IC card handles all of them, so stop trying to optimize — just tap and go."
+      },
+      {
+        "day": 3,
+        "location": "Hakone",
+        "from": "Shinjuku → Hakone-Yumoto by Odakyu Romancecar",
+        "travelMethod": "train",
+        "travelTime": "~1h 25m",
+        "overnight": "Hakone",
+        "hotelPriceRange": "$70-350",
+        "hotels": [
+          {
+            "name": "Hakone Tent",
+            "location": "Gora, Hakone",
+            "description": "A hostel with private onsen baths and a lively bar — the rare way to do a Japanese hot-spring town on a backpacker budget without missing the point of it.",
+            "priceRange": "$55-85/night",
+            "category": "hostel"
+          },
+          {
+            "name": "Hakone Kowakien Ten-yu",
+            "location": "Hakone",
+            "description": "Modern ryokan where the rooms have private open-air baths looking into the valley. The splurge that people remember from the whole trip.",
+            "priceRange": "$280-450/night",
+            "category": "ryokan",
+            "stars": 4
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Hakone Ropeway & Owakudani",
+            "description": "A gondola over a live volcanic valley of sulfur vents, where they sell eggs boiled black in the springs. On a clear day Mt. Fuji sits right behind it.",
+            "hours": "9:00–17:00 (closes in high wind)",
+            "price": "¥1,500 one way (~$10)",
+            "category": "nature",
+            "duration": "2-3 hours"
+          },
+          {
+            "name": "Hakone Open-Air Museum",
+            "description": "Sculpture park against the mountains with a Picasso pavilion and a stained-glass tower you climb. Works even in rain.",
+            "hours": "9:00–17:00",
+            "price": "¥1,600 (~$11)",
+            "category": "art",
+            "duration": "2 hours"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Ryokan kaiseki dinner",
+            "description": "If you book a ryokan with dinner, expect 8-12 small seasonal courses served in your room or a private dining room. It's a two-hour event, not a meal.",
+            "priceRange": "$$$",
+            "cuisine": "Kaiseki"
+          }
+        ],
+        "tips": "Onsen etiquette: wash thoroughly at the seated showers first, no swimsuits, and tie long hair up. Many onsen still refuse visible tattoos — Hakone Tent and Ten-yu both allow them, and private baths sidestep the issue entirely."
+      },
+      {
+        "day": 4,
+        "location": "Kyoto",
+        "from": "Odawara → Kyoto by Tokaido Shinkansen",
+        "travelMethod": "shinkansen",
+        "travelTime": "~2h 15m",
+        "overnight": "Kyoto (Downtown or Gion)",
+        "hotelPriceRange": "$40-260",
+        "hotels": [
+          {
+            "name": "Piece Hostel Sanjo",
+            "location": "Downtown Kyoto",
+            "description": "Consistently rated among Japan's best hostels — a design space with a big communal kitchen, ten minutes' walk from the Nishiki food market.",
+            "priceRange": "$32-50/night",
+            "category": "hostel"
+          },
+          {
+            "name": "Node Hotel",
+            "location": "Karasuma, Kyoto",
+            "description": "Contemporary art hotel near Nijo Castle with a good ground-floor café and bikes to borrow.",
+            "priceRange": "$150-240/night",
+            "category": "boutique",
+            "stars": 4
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Fushimi Inari Taisha",
+            "description": "Thousands of vermilion torii gates climbing the mountainside. The crowds thin dramatically 20 minutes up, and the full loop to the summit takes about two hours. Open all night — going at 6am or after dark is a completely different experience.",
+            "hours": "24 hours",
+            "price": "Free",
+            "category": "temple",
+            "duration": "2-3 hours"
+          },
+          {
+            "name": "Nishiki Market",
+            "description": "A five-block covered market of pickles, tofu, skewers, and knife shops. Eat as you walk, but step to the side — eating while moving is considered rude.",
+            "hours": "9:00–18:00 (most stalls)",
+            "price": "Free to browse",
+            "category": "food",
+            "duration": "1-2 hours"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Nishiki Market stalls",
+            "description": "Tamagoyaki, soy-milk doughnuts, grilled scallops, and matcha everything. The best-value lunch in Kyoto.",
+            "priceRange": "$",
+            "cuisine": "Street food"
+          }
+        ],
+        "tips": "Kyoto is compact but its sights are on opposite edges — rent a bike, or accept that buses are slow. Ship your bag from Hakone straight to your Kyoto hotel with takkyubin so you can enjoy the shinkansen unencumbered."
+      },
+      {
+        "day": 5,
+        "location": "Kyoto (Arashiyama & Higashiyama)",
+        "from": "Within Kyoto",
+        "travelMethod": "walking / train",
+        "travelTime": "N/A",
+        "overnight": "Kyoto",
+        "hotelPriceRange": "$40-260",
+        "hotels": [
+          {
+            "name": "Same as previous night",
+            "location": "Kyoto",
+            "description": "Three nights in Kyoto is the right amount — don't move hotels.",
+            "priceRange": "$40-260/night",
+            "category": "mid-range"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Arashiyama Bamboo Grove",
+            "description": "The famous bamboo corridor. It's genuinely magical before 8am and genuinely miserable at 11am — this is not a place to sleep in. Combine with Tenryu-ji temple's garden next door.",
+            "hours": "24 hours (Tenryu-ji 8:30–17:00)",
+            "price": "Free (Tenryu-ji ¥500)",
+            "category": "nature",
+            "duration": "2 hours"
+          },
+          {
+            "name": "Kiyomizu-dera & the Higashiyama lanes",
+            "description": "Hillside temple on wooden stilts, approached through the preserved Sannenzaka and Ninenzaka streets. Beautiful at dusk when the day-trippers have gone.",
+            "hours": "6:00–18:00",
+            "price": "¥400 (~$3)",
+            "category": "temple",
+            "duration": "3 hours"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Pontocho Alley",
+            "description": "A narrow lane of riverside restaurants between Shijo and Sanjo. In summer, restaurants build platforms out over the Kamo River (kawayuka) — book ahead for one.",
+            "priceRange": "$$$",
+            "cuisine": "Kyoto kaiseki / izakaya"
+          }
+        ],
+        "tips": "Gion is a working neighborhood, not an attraction. Photographing geiko and maiko on the private side streets is banned and fined — stay on Hanamikoji's main stretch and keep your camera down."
+      },
+      {
+        "day": 6,
+        "location": "Nara",
+        "from": "Kyoto → Nara by JR Nara line",
+        "travelMethod": "train",
+        "travelTime": "~45 min each way",
+        "overnight": "Kyoto",
+        "hotelPriceRange": "$40-260",
+        "hotels": [
+          {
+            "name": "Same as previous night",
+            "location": "Kyoto",
+            "description": "Nara is an easy day trip — keep your Kyoto base.",
+            "priceRange": "$40-260/night",
+            "category": "mid-range"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Nara Park & the deer",
+            "description": "1,200 free-roaming deer that bow for crackers sold by park vendors. They are wild animals and will absolutely mug you for food — don't keep crackers in an open bag.",
+            "hours": "24 hours",
+            "price": "Free (deer crackers ¥200)",
+            "category": "nature",
+            "duration": "2 hours"
+          },
+          {
+            "name": "Todai-ji Temple",
+            "description": "One of the world's largest wooden buildings, housing a 15-metre bronze Buddha cast in 752. The scale genuinely doesn't photograph.",
+            "hours": "7:30–17:30",
+            "price": "¥800 (~$5)",
+            "category": "temple",
+            "duration": "1.5 hours"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Mochi pounding at Nakatanidou",
+            "description": "Two men pound mochi at terrifying speed to a crowd — a street show that ends with you eating warm yomogi mochi. Free to watch.",
+            "priceRange": "$",
+            "cuisine": "Wagashi"
+          }
+        ],
+        "tips": "Go to Nara early and you'll be back in Kyoto by mid-afternoon with time for temples. Skip the deer-cracker vendors nearest the station — the deer there are the pushiest."
+      },
+      {
+        "day": 7,
+        "location": "Osaka",
+        "from": "Kyoto → Osaka by JR Special Rapid",
+        "travelMethod": "train",
+        "travelTime": "~30 min",
+        "overnight": "Osaka (Namba)",
+        "hotelPriceRange": "$35-220",
+        "hotels": [
+          {
+            "name": "The Blend Inn",
+            "location": "Osaka",
+            "description": "Architect-designed hostel in a converted warehouse with private rooms and a bar — a short hop from Namba on the metro.",
+            "priceRange": "$35-60/night",
+            "category": "hostel"
+          },
+          {
+            "name": "Cross Hotel Osaka",
+            "location": "Shinsaibashi",
+            "description": "Right between Dotonbori and Shinsaibashi shopping, so you can roll out of the nightlife and into bed.",
+            "priceRange": "$140-220/night",
+            "category": "mid-range",
+            "stars": 4
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Dotonbori",
+            "description": "Osaka's canal-side neon strip under the Glico running man sign. Loud, greasy, and the most fun street in Japan after dark.",
+            "hours": "24 hours; busiest 19:00–24:00",
+            "price": "Free",
+            "category": "nightlife",
+            "duration": "Evening"
+          },
+          {
+            "name": "Osaka Castle & park",
+            "description": "Reconstructed keep with a genuinely good museum inside, ringed by a moat and 600 cherry trees. The park is free; the keep is ticketed.",
+            "hours": "9:00–17:00",
+            "price": "¥600 (~$4)",
+            "category": "history",
+            "duration": "2 hours"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Takoyaki and okonomiyaki in Dotonbori",
+            "description": "Osaka is Japan's kitchen — octopus balls from a street window and savory cabbage pancakes cooked on the griddle in front of you.",
+            "priceRange": "$",
+            "cuisine": "Osakan street food"
+          },
+          {
+            "name": "Kuromon Ichiba Market",
+            "description": "Covered market for grilled scallops, wagyu skewers, and fresh uni. Best before 15:00.",
+            "priceRange": "$$",
+            "cuisine": "Seafood"
+          }
+        ],
+        "tips": "Osaka's nightlife runs far later than Tokyo's and is dramatically cheaper. Standing bars (tachinomi) around Namba are the local move — a few hundred yen a drink."
+      },
+      {
+        "day": 8,
+        "location": "Hiroshima",
+        "from": "Osaka → Hiroshima by Sanyo Shinkansen, then ferry",
+        "travelMethod": "shinkansen + ferry",
+        "travelTime": "~1h 30m train, ~25 min ferry",
+        "overnight": "Hiroshima",
+        "hotelPriceRange": "$35-200",
+        "hotels": [
+          {
+            "name": "Sheraton Grand Hiroshima",
+            "location": "Hiroshima Station",
+            "description": "Directly at the station, which matters when you're coming back late from the island.",
+            "priceRange": "$130-200/night",
+            "category": "mid-range",
+            "stars": 4
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Peace Memorial Park & Museum",
+            "description": "The A-Bomb Dome, the cenotaph, and a museum that is deliberately difficult. Allow two hours and don't schedule anything cheerful straight after.",
+            "hours": "8:30–18:00",
+            "price": "¥200 (~$1.50)",
+            "category": "history",
+            "duration": "2-3 hours"
+          },
+          {
+            "name": "Itsukushima Shrine, Miyajima",
+            "description": "The great orange torii that appears to float at high tide. Check a tide chart before you go — at low tide you can walk out to it, at high tide you get the postcard.",
+            "hours": "6:30–18:00",
+            "price": "¥300 (~$2)",
+            "category": "temple",
+            "duration": "3-4 hours"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Hiroshima-style okonomiyaki",
+            "description": "Layered rather than mixed, with noodles built in. Okonomimura is a building of nothing but okonomiyaki stalls stacked on three floors.",
+            "priceRange": "$$",
+            "cuisine": "Okonomiyaki"
+          }
+        ],
+        "tips": "Miyajima's deer will eat your ferry ticket and your map — they're bolder than Nara's. Last ferries back run about 22:00 but thin out well before that."
+      },
+      {
+        "day": 9,
+        "location": "Osaka",
+        "from": "Hiroshima → Osaka by Sanyo Shinkansen",
+        "travelMethod": "shinkansen",
+        "travelTime": "~1h 30m",
+        "overnight": "Osaka (Namba)",
+        "hotelPriceRange": "$35-220",
+        "hotels": [
+          {
+            "name": "Cross Hotel Osaka",
+            "location": "Shinsaibashi",
+            "description": "Back in Osaka for a last night near the airport connection.",
+            "priceRange": "$140-220/night",
+            "category": "mid-range",
+            "stars": 4
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Shinsekai & Tsutenkaku",
+            "description": "A retro-futurist district frozen somewhere around 1960, full of kushikatsu (deep-fried skewer) joints. Cheap, loud, and unmistakably Osaka.",
+            "hours": "Most shops 11:00–22:00",
+            "price": "Tower ¥900 (~$6)",
+            "category": "city",
+            "duration": "2-3 hours"
+          },
+          {
+            "name": "Umeda Sky Building floating garden",
+            "description": "Two towers joined by a rooftop ring at 170m, with an escalator through open air between them. Best at sunset.",
+            "hours": "9:30–22:30",
+            "price": "¥1,500 (~$10)",
+            "category": "city",
+            "duration": "1.5 hours"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Kushikatsu in Shinsekai",
+            "description": "Skewered, breaded, deep-fried everything with a communal dipping sauce. The one rule, posted everywhere: no double-dipping.",
+            "priceRange": "$",
+            "cuisine": "Kushikatsu"
+          }
+        ],
+        "tips": "Buy your souvenirs and snacks today — Kansai Airport's prices are roughly double the city's."
+      },
+      {
+        "day": 10,
+        "location": "Osaka",
+        "from": "Namba → Kansai Airport by Nankai Rapi:t",
+        "travelMethod": "train",
+        "travelTime": "~40 min",
+        "overnight": "—",
+        "hotelPriceRange": "$0",
+        "hotels": [],
+        "attractions": [
+          {
+            "name": "Kansai Airport",
+            "description": "Allow 2.5-3 hours for an international departure. The Rapi:t express from Namba is the fastest and most comfortable way out.",
+            "hours": "—",
+            "price": "¥1,450 (~$10)",
+            "category": "transport",
+            "duration": "—"
+          }
+        ],
+        "foodHighlights": [],
+        "tips": "Claim your tax refund before security if you bought electronics or clothing — you'll need your passport and the sealed bags they gave you at purchase."
+      }
+    ]
+  },
+  {
+    "id": "paris_france",
+    "name": "Paris & Day Trips",
+    "subtitle": "Wine bars, flea markets, and the museums between them",
+    "emoji": "🇫🇷",
+    "type": "international",
+    "primaryTransport": "mixed",
+    "totalDays": 7,
+    "countries": [
+      "France"
+    ],
+    "currency": "EUR",
+    "bestMonths": "April–June, September–October",
+    "flightEstimate": {
+      "fromNYC": "$450-800",
+      "fromChicago": "$600-950",
+      "fromLA": "$700-1100",
+      "fromDallas": "$650-1000",
+      "notes": "One of the cheapest transatlantic routes there is — East Coast fares dip under $500 round trip in shoulder season. Fly into CDG (RER B train into the city, ~35 min) rather than Beauvais, which budget carriers call 'Paris' but is 90 minutes away by bus."
+    },
+    "dailyBudgets": {
+      "budget": {
+        "perPersonPerDay": 110,
+        "label": "Budget",
+        "includes": "Hostel dorm ($40-60/night), bakery breakfasts, market lunches, Navigo transit pass, free museum nights and parks",
+        "breakdown": {
+          "accommodation": "$40-60",
+          "meals": "$30-40",
+          "localTransport": "$5-8",
+          "activitiesEntrance": "$15-25",
+          "misc": "$10-15"
+        }
+      },
+      "midrange": {
+        "perPersonPerDay": 230,
+        "label": "Mid-range",
+        "includes": "3-star hotel in the Marais or Canal Saint-Martin ($130-200), bistro dinners with wine, all major museums, occasional taxi",
+        "breakdown": {
+          "accommodation": "$130-200",
+          "meals": "$60-85",
+          "localTransport": "$8-12",
+          "activitiesEntrance": "$20-30",
+          "misc": "$15-25"
+        }
+      },
+      "premium": {
+        "perPersonPerDay": 450,
+        "label": "Premium",
+        "includes": "Design hotel or Left Bank classic ($300-500), Michelin dinners, skip-the-line private guides, chauffeured day trips"
+      }
+    },
+    "transportNotes": "The metro is the fastest way anywhere and runs until roughly 01:15 (02:15 Fri/Sat). Buy a Navigo Easy card at any station and load carnets of 10 rides, or a Navigo Découverte weekly pass if you're arriving on a Monday. Paris is also genuinely walkable — the whole center is about an hour end to end on foot. Skip taxis at rush hour; they lose to the metro every time.",
+    "highlights": [
+      "Louvre & Musée d'Orsay",
+      "Le Marais wine bars",
+      "Versailles",
+      "Montmartre at dawn"
+    ],
+    "tags": [
+      "City",
+      "Art",
+      "Food & Wine",
+      "Nightlife",
+      "Shopping",
+      "International"
+    ],
+    "difficulty": {
+      "driveIntensity": 1,
+      "physicalActivity": 2,
+      "planningComplexity": 2,
+      "overall": 1.7
+    },
+    "tripDays": [
+      {
+        "day": 1,
+        "location": "Paris (Le Marais)",
+        "from": "CDG → Gare du Nord by RER B",
+        "travelMethod": "flight + train",
+        "travelTime": "~35 min from CDG",
+        "overnight": "Le Marais (3rd/4th)",
+        "hotelPriceRange": "$50-200",
+        "hotels": [
+          {
+            "name": "Les Piaules",
+            "location": "Belleville",
+            "description": "Hostel with a rooftop bar that locals actually drink at, and some of the best-designed dorms in the city.",
+            "priceRange": "$40-65/night",
+            "category": "hostel"
+          },
+          {
+            "name": "Hôtel Jeanne d'Arc Le Marais",
+            "location": "Le Marais",
+            "description": "Small, warm, and unbeatably located on a quiet square minutes from Place des Vosges.",
+            "priceRange": "$140-200/night",
+            "category": "mid-range",
+            "stars": 3
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Place des Vosges & Le Marais",
+            "description": "The oldest planned square in Paris, ringed by arcades. The surrounding streets are the best wandering in the city — vintage shops, falafel, and wine bars in equal measure.",
+            "hours": "Square 24h",
+            "price": "Free",
+            "category": "city",
+            "duration": "2-3 hours"
+          },
+          {
+            "name": "Seine riverbanks at sunset",
+            "description": "The stretch from Pont Marie to Pont Neuf, along Île Saint-Louis. Parisians buy a bottle and sit on the quay — you should too.",
+            "hours": "24 hours",
+            "price": "Free",
+            "category": "city",
+            "duration": "Evening"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "L'As du Fallafel",
+            "description": "The permanent queue on rue des Rosiers is worth it. Order the special, eat it standing up.",
+            "priceRange": "$",
+            "cuisine": "Israeli / falafel"
+          },
+          {
+            "name": "Septime La Cave",
+            "description": "The natural-wine bar attached to one of Paris's best restaurants. No reservations, small plates, genuinely knowledgeable staff.",
+            "priceRange": "$$",
+            "cuisine": "Natural wine"
+          }
+        ],
+        "tips": "Almost every bakery closes one day a week, and much of the city shuts on Sunday afternoons — check before you plan a food day around a Sunday."
+      },
+      {
+        "day": 2,
+        "location": "Paris (Louvre & Left Bank)",
+        "from": "Within Paris",
+        "travelMethod": "walking / metro",
+        "travelTime": "N/A",
+        "overnight": "Le Marais",
+        "hotelPriceRange": "$50-200",
+        "hotels": [
+          {
+            "name": "Same as previous night",
+            "location": "Paris",
+            "description": "Stay in one place — Paris is small and moving hotels wastes half a day.",
+            "priceRange": "$50-200/night",
+            "category": "mid-range"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Musée du Louvre",
+            "description": "Too big to 'do'. Pick three things and leave — most people choose the Mona Lisa (small, mobbed), the Winged Victory (spectacular), and the Egyptian wing. Book a timed slot online; Wednesday and Friday evenings are far quieter.",
+            "hours": "9:00–18:00, till 21:45 Wed & Fri; closed Tue",
+            "price": "€22 (~$24)",
+            "category": "museum",
+            "duration": "3 hours"
+          },
+          {
+            "name": "Musée d'Orsay",
+            "description": "The Impressionist collection in a converted Beaux-Arts railway station. Most visitors prefer it to the Louvre, and it's a fraction of the size.",
+            "hours": "9:30–18:00, till 21:45 Thu; closed Mon",
+            "price": "€16 (~$17)",
+            "category": "museum",
+            "duration": "2-3 hours"
+          },
+          {
+            "name": "Shakespeare and Company",
+            "description": "The English-language bookshop opposite Notre-Dame that's been sheltering writers since 1951. The café next door is a good reset.",
+            "hours": "10:00–20:00",
+            "price": "Free",
+            "category": "culture",
+            "duration": "45 min"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Marché d'Aligre",
+            "description": "A covered and open-air market with a legendary wine bar, Le Baron Rouge, where people drink at barrels on the pavement.",
+            "priceRange": "$$",
+            "cuisine": "Market / wine bar"
+          }
+        ],
+        "tips": "National museums are free on the first Sunday of the month — glorious for the wallet, brutal for the queues. Under-26 EU residents get in free year-round; non-EU under-18s too."
+      },
+      {
+        "day": 3,
+        "location": "Versailles",
+        "from": "Paris → Versailles Château by RER C",
+        "travelMethod": "train",
+        "travelTime": "~45 min each way",
+        "overnight": "Le Marais",
+        "hotelPriceRange": "$50-200",
+        "hotels": [
+          {
+            "name": "Same as previous night",
+            "location": "Paris",
+            "description": "Versailles is a comfortable day trip.",
+            "priceRange": "$50-200/night",
+            "category": "mid-range"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Château de Versailles",
+            "description": "The Hall of Mirrors and the state apartments. Go at opening or after 15:00 — the middle of the day is a crush. Closed Mondays.",
+            "hours": "9:00–18:30; closed Mon",
+            "price": "€21 palace / €32 passport (~$23-35)",
+            "category": "history",
+            "duration": "3 hours"
+          },
+          {
+            "name": "The Gardens & Marie Antoinette's Estate",
+            "description": "Bigger than the palace and, for most people, better. Rent a bike or a rowboat on the Grand Canal. The Queen's Hamlet — a fake rustic village she had built — is a 25-minute walk out and worth every step.",
+            "hours": "8:00–20:30",
+            "price": "Free most days; €10 on fountain-show days",
+            "category": "garden",
+            "duration": "3 hours"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Picnic on the Grand Canal",
+            "description": "Buy bread, cheese, and fruit at a Paris market before you leave — the food inside Versailles is expensive and mediocre.",
+            "priceRange": "$",
+            "cuisine": "Picnic"
+          }
+        ],
+        "tips": "Buy the palace ticket online with a timed entry; the on-the-day queue routinely runs over an hour. Fountain shows run weekends April–October and change the garden ticket price."
+      },
+      {
+        "day": 4,
+        "location": "Paris (Montmartre & Canal Saint-Martin)",
+        "from": "Within Paris",
+        "travelMethod": "walking / metro",
+        "travelTime": "N/A",
+        "overnight": "Le Marais",
+        "hotelPriceRange": "$50-200",
+        "hotels": [
+          {
+            "name": "Same as previous night",
+            "location": "Paris",
+            "description": "",
+            "priceRange": "$50-200/night",
+            "category": "mid-range"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Montmartre & Sacré-Cœur",
+            "description": "Go at 8am. The basilica steps have the best free view in Paris, and the village lanes behind it — rue de l'Abreuvoir, the vineyard — are empty before the tour groups land at ten.",
+            "hours": "Basilica 6:30–22:30",
+            "price": "Free (dome €8)",
+            "category": "city",
+            "duration": "3 hours"
+          },
+          {
+            "name": "Canal Saint-Martin",
+            "description": "Iron footbridges, plane trees, and the 10th arrondissement's café strip. This is where young Parisians actually spend their evenings — bottle on the canal bank, feet over the water.",
+            "hours": "24 hours",
+            "price": "Free",
+            "category": "city",
+            "duration": "Evening"
+          },
+          {
+            "name": "Marché aux Puces de Saint-Ouen",
+            "description": "The largest antiques market in the world, on the northern edge of the city. Go Saturday or Sunday morning and haggle.",
+            "hours": "Sat–Mon, roughly 10:00–18:00",
+            "price": "Free",
+            "category": "shopping",
+            "duration": "2-3 hours"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Le Comptoir Général",
+            "description": "A rambling 'ghetto museum' bar off the canal — plants, thrift-shop decor, Afro-Caribbean food, and no sign on the door.",
+            "priceRange": "$$",
+            "cuisine": "Bar / Afro-Caribbean"
+          }
+        ],
+        "tips": "Skip the artists offering to sketch you on Place du Tertre and the men who tie friendship bracelets on your wrist at the Sacré-Cœur steps — both are aggressive scams."
+      },
+      {
+        "day": 5,
+        "location": "Paris (Eiffel Tower & western Paris)",
+        "from": "Within Paris",
+        "travelMethod": "walking / metro",
+        "travelTime": "N/A",
+        "overnight": "Le Marais",
+        "hotelPriceRange": "$50-200",
+        "hotels": [
+          {
+            "name": "Same as previous night",
+            "location": "Paris",
+            "description": "",
+            "priceRange": "$50-200/night",
+            "category": "mid-range"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Eiffel Tower",
+            "description": "Book the summit online weeks ahead. If it's sold out, the stairs to the second floor are cheaper, quicker, and more fun. It sparkles for five minutes on every hour after dark.",
+            "hours": "9:00–00:45 (summer)",
+            "price": "€14 stairs / €29 summit (~$15-31)",
+            "category": "landmark",
+            "duration": "2-3 hours"
+          },
+          {
+            "name": "Trocadéro & Champ de Mars",
+            "description": "The two classic vantage points. Trocadéro for the head-on photo at sunrise; Champ de Mars for lying on the grass with a bottle at sunset.",
+            "hours": "24 hours",
+            "price": "Free",
+            "category": "city",
+            "duration": "1-2 hours"
+          },
+          {
+            "name": "Musée Rodin",
+            "description": "A mansion and rose garden full of sculpture, including The Thinker. The garden ticket alone is cheap and, on a sunny day, the nicest hour in the 7th.",
+            "hours": "10:00–18:30; closed Mon",
+            "price": "€14 (~$15); garden only €5",
+            "category": "museum",
+            "duration": "1.5 hours"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Rue Cler market street",
+            "description": "A pedestrian food street near the tower — cheese, rotisserie chicken, and éclairs for a Champ de Mars picnic.",
+            "priceRange": "$$",
+            "cuisine": "Market"
+          }
+        ],
+        "tips": "Every restaurant within sight of the Eiffel Tower is a tourist trap. Walk five minutes into the 7th, or picnic — the picnic is genuinely the better experience anyway."
+      },
+      {
+        "day": 6,
+        "location": "Paris (Père Lachaise & Belleville)",
+        "from": "Within Paris",
+        "travelMethod": "walking / metro",
+        "travelTime": "N/A",
+        "overnight": "Le Marais",
+        "hotelPriceRange": "$50-200",
+        "hotels": [
+          {
+            "name": "Same as previous night",
+            "location": "Paris",
+            "description": "",
+            "priceRange": "$50-200/night",
+            "category": "mid-range"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Père Lachaise Cemetery",
+            "description": "110 acres of cobbled avenues and elaborate tombs — Oscar Wilde, Jim Morrison, Édith Piaf. Take a map at the gate or you will get lost, which is admittedly half the appeal.",
+            "hours": "8:00–18:00",
+            "price": "Free",
+            "category": "history",
+            "duration": "2 hours"
+          },
+          {
+            "name": "Belleville street art",
+            "description": "The best concentration of large-scale murals in Paris, on and around rue Dénoyez. The neighborhood is also the city's second Chinatown — the food is excellent and cheap.",
+            "hours": "24 hours",
+            "price": "Free",
+            "category": "art",
+            "duration": "2 hours"
+          },
+          {
+            "name": "Parc des Buttes-Chaumont",
+            "description": "A steep, dramatic park with a cliff-top temple and a lake, built on an old quarry. Where the 19th arrondissement goes to drink on a summer evening.",
+            "hours": "7:00–22:00 (summer)",
+            "price": "Free",
+            "category": "park",
+            "duration": "1-2 hours"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Le Baratin",
+            "description": "A tiny Belleville bistro that other chefs eat at. Handwritten menu, natural wine, book ahead.",
+            "priceRange": "$$$",
+            "cuisine": "Bistro"
+          }
+        ],
+        "tips": "The 20th and 19th arrondissements are where rent is cheapest and the bars are best — this is the Paris most visitors never see."
+      },
+      {
+        "day": 7,
+        "location": "Paris",
+        "from": "Gare du Nord → CDG by RER B",
+        "travelMethod": "train",
+        "travelTime": "~35 min",
+        "overnight": "—",
+        "hotelPriceRange": "$0",
+        "hotels": [],
+        "attractions": [
+          {
+            "name": "Charles de Gaulle Airport",
+            "description": "Allow 3 hours — CDG's terminals are far apart and security queues are unpredictable. The RER B runs every 10-15 minutes.",
+            "hours": "—",
+            "price": "€11.80 (~$13)",
+            "category": "transport",
+            "duration": "—"
+          }
+        ],
+        "foodHighlights": [],
+        "tips": "Claim your VAT refund (détaxe) at the airport kiosks if you spent over €100 in a single shop — you'll need the receipts and your passport, and you must do it before checking the goods."
+      }
+    ]
+  },
+  {
+    "id": "portugal_coast",
+    "name": "Portugal: Lisbon to the Algarve",
+    "subtitle": "Tiles, surf breaks, and Europe's best-value nights out",
+    "emoji": "🇵🇹",
+    "type": "international",
+    "primaryTransport": "mixed",
+    "totalDays": 10,
+    "countries": [
+      "Portugal"
+    ],
+    "currency": "EUR",
+    "bestMonths": "May–June, September–early October",
+    "flightEstimate": {
+      "fromNYC": "$450-850",
+      "fromChicago": "$600-1000",
+      "fromLA": "$750-1150",
+      "fromDallas": "$700-1050",
+      "notes": "TAP Portugal runs direct from several US cities and often prices Lisbon below Madrid or Barcelona. TAP also allows a free stopover in Lisbon on connections to elsewhere in Europe. Fly into Lisbon (LIS), home out of Faro (FAO) if you can — it saves a four-hour backtrack from the Algarve."
+    },
+    "dailyBudgets": {
+      "budget": {
+        "perPersonPerDay": 75,
+        "label": "Budget",
+        "includes": "Hostel dorm ($22-35/night), pastéis and coffee, prato do dia lunches, trains and buses, mostly free viewpoints and beaches",
+        "breakdown": {
+          "accommodation": "$22-35",
+          "meals": "$20-30",
+          "localTransport": "$6-10",
+          "activitiesEntrance": "$8-15",
+          "misc": "$8-12"
+        }
+      },
+      "midrange": {
+        "perPersonPerDay": 150,
+        "label": "Mid-range",
+        "includes": "Boutique guesthouse or 3-star ($75-130), seafood dinners with vinho verde, surf lessons, occasional rental car",
+        "breakdown": {
+          "accommodation": "$75-130",
+          "meals": "$40-55",
+          "localTransport": "$12-20",
+          "activitiesEntrance": "$15-25",
+          "misc": "$12-20"
+        }
+      },
+      "premium": {
+        "perPersonPerDay": 300,
+        "label": "Premium",
+        "includes": "Design hotels and pousadas ($200-350), tasting menus, private surf coaching, cliffside suites in the Algarve"
+      }
+    },
+    "transportNotes": "Portugal is small and the trains are good — Lisbon to Porto takes under three hours on the Alfa Pendular. Book intercity trains a few days ahead on cp.pt for the cheapest fares. You don't need a car for Lisbon, Porto, or Sintra, but the Algarve's best beaches are hard to reach without one; rent for the last few days only. Lisbon's hills are no joke: the trams and funiculars are covered by a 24-hour transit pass and will save your legs.",
+    "highlights": [
+      "Sintra's palaces",
+      "Porto's wine cellars",
+      "Algarve sea caves",
+      "Lisbon's miradouros"
+    ],
+    "tags": [
+      "Coastal",
+      "Surfing",
+      "Nightlife",
+      "Food & Wine",
+      "Beaches",
+      "Budget-Friendly",
+      "International"
+    ],
+    "difficulty": {
+      "driveIntensity": 2,
+      "physicalActivity": 3,
+      "planningComplexity": 2,
+      "overall": 2.3
+    },
+    "tripDays": [
+      {
+        "day": 1,
+        "location": "Lisbon (Alfama & Baixa)",
+        "from": "Land at Lisbon (LIS) → metro red line into the city",
+        "travelMethod": "flight + metro",
+        "travelTime": "~25 min from LIS",
+        "overnight": "Alfama or Baixa",
+        "hotelPriceRange": "$28-160",
+        "hotels": [
+          {
+            "name": "Home Lisbon Hostel",
+            "location": "Baixa",
+            "description": "Repeatedly voted one of the world's best hostels, largely because the owner's mother cooks a family dinner for guests most nights.",
+            "priceRange": "$25-40/night",
+            "category": "hostel"
+          },
+          {
+            "name": "Memmo Alfama",
+            "location": "Alfama",
+            "description": "Boutique hotel tucked in the old Moorish quarter with a red-tiled pool terrace over the rooftops.",
+            "priceRange": "$180-260/night",
+            "category": "boutique",
+            "stars": 4
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Alfama & the miradouros",
+            "description": "The medieval quarter that survived the 1755 earthquake — washing lines, tiled facades, and near-vertical alleys. Miradouro de Santa Luzia and das Portas do Sol are the two viewpoints worth the climb.",
+            "hours": "24 hours",
+            "price": "Free",
+            "category": "city",
+            "duration": "3 hours"
+          },
+          {
+            "name": "Tram 28",
+            "description": "The vintage yellow tram that grinds through Alfama's tightest corners. Board at Martim Moniz before 9am or you'll stand the whole way — and watch your pockets, it's the city's worst spot for pickpockets.",
+            "hours": "6:00–23:00",
+            "price": "€3.20 onboard (~$3.50), free with transit pass",
+            "category": "city",
+            "duration": "1 hour"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Time Out Market",
+            "description": "Two dozen stalls curated from the city's best kitchens under one roof. Pricier than a neighborhood tasca but a very efficient introduction.",
+            "priceRange": "$$",
+            "cuisine": "Portuguese"
+          },
+          {
+            "name": "Ginjinha bars",
+            "description": "Sour-cherry liqueur served in a shot glass at hole-in-the-wall counters near Rossio. One euro, one minute, extremely Lisbon.",
+            "priceRange": "$",
+            "cuisine": "Liqueur"
+          }
+        ],
+        "tips": "Lisbon is built on seven hills and the pavement is polished limestone — it is genuinely slippery in rain. Bring shoes with grip, not fashion soles."
+      },
+      {
+        "day": 2,
+        "location": "Sintra",
+        "from": "Rossio station → Sintra by train",
+        "travelMethod": "train",
+        "travelTime": "~40 min each way",
+        "overnight": "Lisbon",
+        "hotelPriceRange": "$28-160",
+        "hotels": [
+          {
+            "name": "Same as previous night",
+            "location": "Lisbon",
+            "description": "Sintra is a day trip — keep your Lisbon base.",
+            "priceRange": "$28-160/night",
+            "category": "mid-range"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Pena Palace",
+            "description": "A canary-yellow and blood-red Romanticist fantasy on a wooded peak. Book a timed entry online — they cap numbers and same-day tickets routinely sell out by 10am.",
+            "hours": "9:30–18:30",
+            "price": "€14 park / €20 palace (~$15-22)",
+            "category": "palace",
+            "duration": "2-3 hours"
+          },
+          {
+            "name": "Quinta da Regaleira",
+            "description": "A Gothic estate riddled with tunnels and the Initiation Well — a spiral staircase descending nine storeys into the ground. More fun than Pena, and less crowded.",
+            "hours": "9:30–19:00",
+            "price": "€12 (~$13)",
+            "category": "palace",
+            "duration": "2 hours"
+          },
+          {
+            "name": "Cabo da Roca",
+            "description": "The westernmost point of continental Europe — cliffs dropping 140m into the Atlantic. Reachable by bus 403 from Sintra.",
+            "hours": "24 hours",
+            "price": "Free",
+            "category": "nature",
+            "duration": "1 hour"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Piriquita",
+            "description": "The Sintra bakery for travesseiros — flaky almond 'pillows' served warm. Queue moves fast.",
+            "priceRange": "$",
+            "cuisine": "Pastry"
+          }
+        ],
+        "tips": "Sintra's hills are steep and the 434 tourist bus loops constantly, but it's often faster to walk down than to wait for it. Go on a weekday; weekends are chaos."
+      },
+      {
+        "day": 3,
+        "location": "Lisbon (Belém) & Bairro Alto nightlife",
+        "from": "Within Lisbon",
+        "travelMethod": "tram / walking",
+        "travelTime": "N/A",
+        "overnight": "Lisbon",
+        "hotelPriceRange": "$28-160",
+        "hotels": [
+          {
+            "name": "Same as previous night",
+            "location": "Lisbon",
+            "description": "",
+            "priceRange": "$28-160/night",
+            "category": "mid-range"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Jerónimos Monastery & Belém Tower",
+            "description": "Manueline stone-carving at its most extravagant, funded by the spice trade. Both are UNESCO-listed and a tram ride west of the center.",
+            "hours": "10:00–18:30; closed Mon",
+            "price": "€12 monastery (~$13)",
+            "category": "history",
+            "duration": "3 hours"
+          },
+          {
+            "name": "LX Factory",
+            "description": "A converted industrial complex of bookshops, rooftop bars, and street art under the bridge. Sunday brings a market.",
+            "hours": "Shops from 12:00; bars till late",
+            "price": "Free",
+            "category": "culture",
+            "duration": "2 hours"
+          },
+          {
+            "name": "Bairro Alto & Pink Street",
+            "description": "After 22:00 the Bairro Alto's narrow streets fill with people drinking outside tiny bars — you buy a drink and take it into the street. Pink Street below is louder and later.",
+            "hours": "22:00–04:00",
+            "price": "Drinks €2-5",
+            "category": "nightlife",
+            "duration": "Evening"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Pastéis de Belém",
+            "description": "The original 1837 custard tarts, still made to a recipe only a handful of people know. Eat them warm with cinnamon, standing at the counter.",
+            "priceRange": "$",
+            "cuisine": "Pastry"
+          }
+        ],
+        "tips": "Nights out here start absurdly late — bars fill at midnight and clubs at 2am. Nap in the afternoon if you plan to keep up."
+      },
+      {
+        "day": 4,
+        "location": "Porto",
+        "from": "Lisbon Oriente → Porto Campanhã by Alfa Pendular",
+        "travelMethod": "train",
+        "travelTime": "~2h 45m",
+        "overnight": "Porto (Ribeira / Baixa)",
+        "hotelPriceRange": "$25-180",
+        "hotels": [
+          {
+            "name": "The Passenger Hostel",
+            "location": "São Bento Station, Porto",
+            "description": "Built inside the station's old passenger wing — arguably the most beautiful hostel in Europe.",
+            "priceRange": "$30-50/night",
+            "category": "hostel"
+          },
+          {
+            "name": "Torel Avantgarde",
+            "location": "Porto",
+            "description": "Art-themed hotel on the hillside with river views and a pool.",
+            "priceRange": "$190-280/night",
+            "category": "boutique",
+            "stars": 5
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Livraria Lello",
+            "description": "The neo-Gothic bookshop with the crimson staircase, said to have inspired Hogwarts. The €8 entry is redeemable against a book. Go at opening or skip it.",
+            "hours": "9:30–19:00",
+            "price": "€8 (~$9), redeemable",
+            "category": "culture",
+            "duration": "45 min"
+          },
+          {
+            "name": "Ribeira & Dom Luís I Bridge",
+            "description": "The UNESCO riverfront of stacked pastel houses. Walk the bridge's upper deck at sunset for the view back over the city.",
+            "hours": "24 hours",
+            "price": "Free",
+            "category": "city",
+            "duration": "2 hours"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Francesinha",
+            "description": "Porto's absurd signature: a sandwich of cured meats under melted cheese, drowned in beer-and-tomato sauce, with chips. One is enough for two people.",
+            "priceRange": "$$",
+            "cuisine": "Portuguese"
+          }
+        ],
+        "tips": "Porto is noticeably cheaper than Lisbon and, most people find, more characterful. Give it three nights if you can spare them."
+      },
+      {
+        "day": 5,
+        "location": "Porto (Gaia wine cellars)",
+        "from": "Within Porto — cross to Vila Nova de Gaia",
+        "travelMethod": "walking",
+        "travelTime": "~15 min across the bridge",
+        "overnight": "Porto",
+        "hotelPriceRange": "$25-180",
+        "hotels": [
+          {
+            "name": "Same as previous night",
+            "location": "Porto",
+            "description": "",
+            "priceRange": "$25-180/night",
+            "category": "mid-range"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Port wine cellars, Vila Nova de Gaia",
+            "description": "The lodges across the river — Graham's, Taylor's, Sandeman — where port ages in barrel. Tours run hourly and end in a tasting; Graham's has the best views, Taylor's the best value.",
+            "hours": "10:00–18:00",
+            "price": "€20-30 tour + tasting (~$22-33)",
+            "category": "food",
+            "duration": "2 hours"
+          },
+          {
+            "name": "Miradouro da Serra do Pilar",
+            "description": "The single best view of Porto, looking back across the bridge at the whole tiered city. Free, and five minutes from the cellars.",
+            "hours": "24 hours",
+            "price": "Free",
+            "category": "viewpoint",
+            "duration": "30 min"
+          },
+          {
+            "name": "Mercado do Bolhão",
+            "description": "The restored 19th-century market — produce, salt cod, flowers, and cheap counter lunches.",
+            "hours": "8:00–20:00; Sat till 18:00; closed Sun",
+            "price": "Free",
+            "category": "market",
+            "duration": "1 hour"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Cantina 32",
+            "description": "Modern Portuguese small plates in an industrial-chic room. The cornbread with pulled pork is the order.",
+            "priceRange": "$$",
+            "cuisine": "Modern Portuguese"
+          }
+        ],
+        "tips": "A cellar tour plus tasting costs about the same as two glasses in a bar — it's one of the better-value experiences in Europe."
+      },
+      {
+        "day": 6,
+        "location": "Ericeira",
+        "from": "Porto → Lisbon by train, then bus/car to Ericeira",
+        "travelMethod": "train + bus",
+        "travelTime": "~3h 30m total",
+        "overnight": "Ericeira",
+        "hotelPriceRange": "$25-150",
+        "hotels": [
+          {
+            "name": "Chill in Ericeira Surf House",
+            "location": "Ericeira",
+            "description": "Surf hostel with board hire, lessons, and a communal dinner — the standard way people do this coast in their twenties.",
+            "priceRange": "$30-50/night",
+            "category": "hostel"
+          },
+          {
+            "name": "Immerso Hotel",
+            "location": "Ericeira",
+            "description": "Minimalist clifftop hotel with a pool over the break.",
+            "priceRange": "$170-250/night",
+            "category": "boutique",
+            "stars": 4
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Ericeira surf breaks",
+            "description": "Europe's only World Surfing Reserve — eight quality breaks within 4km. Foz do Lizandro is the beginner beach; Ribeira d'Ilhas hosts competitions. Lessons run about €35 including board and wetsuit.",
+            "hours": "Daylight",
+            "price": "Lesson €30-40 (~$33-44)",
+            "category": "adventure",
+            "duration": "Half day"
+          },
+          {
+            "name": "Ericeira old town",
+            "description": "Whitewashed fishing village on the cliffs, now equal parts surfers and Portuguese weekenders. Small, walkable, and cheap.",
+            "hours": "24 hours",
+            "price": "Free",
+            "category": "city",
+            "duration": "2 hours"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Mar das Latas",
+            "description": "Beach-shack seafood and cold beer with sand under the table.",
+            "priceRange": "$$",
+            "cuisine": "Seafood"
+          }
+        ],
+        "tips": "The Atlantic here is cold year-round — you'll want a 3/2 wetsuit even in August. Every surf school includes one."
+      },
+      {
+        "day": 7,
+        "location": "Lagos, Portugal",
+        "from": "Ericeira → Lagos by car or bus via Lisbon",
+        "travelMethod": "car / bus",
+        "travelTime": "~4h by car, ~5h by bus",
+        "overnight": "Lagos",
+        "hotelPriceRange": "$25-200",
+        "hotels": [
+          {
+            "name": "Rising Cock Hostel",
+            "location": "Lagos",
+            "description": "Legendary (and loud) party hostel — crêpes, sangria, and a nightly crowd heading out together. Not the place for an early night.",
+            "priceRange": "$28-45/night",
+            "category": "hostel"
+          },
+          {
+            "name": "Cascade Wellness Resort",
+            "location": "Lagos",
+            "description": "Clifftop resort with pools over the ocean, for when the hostel phase has run its course.",
+            "priceRange": "$200-320/night",
+            "category": "resort",
+            "stars": 5
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Ponta da Piedade",
+            "description": "Ochre sea stacks and grottoes at the tip of Lagos. Take a small boat from the marina (€15-20, 45 min) or kayak in — the caves only open up from the water.",
+            "hours": "Daylight",
+            "price": "Boat €15-20 (~$17-22)",
+            "category": "nature",
+            "duration": "2 hours"
+          },
+          {
+            "name": "Praia Dona Ana & Praia do Camilo",
+            "description": "Two of Portugal's most photographed cove beaches, both a walk from town down long wooden staircases.",
+            "hours": "24 hours",
+            "price": "Free",
+            "category": "beach",
+            "duration": "Half day"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Lagos old town tascas",
+            "description": "Grilled sardines, cataplana seafood stew, and vinho verde in the walled center. Avoid the marina restaurants with photo menus.",
+            "priceRange": "$$",
+            "cuisine": "Seafood"
+          }
+        ],
+        "tips": "This is a hard driving day. If you'd rather not, the direct Rede Expressos bus from Lisbon to Lagos takes about four hours and costs around €20."
+      },
+      {
+        "day": 8,
+        "location": "Benagil",
+        "from": "Day trip from Lagos",
+        "travelMethod": "car / boat",
+        "travelTime": "~40 min to Benagil",
+        "overnight": "Lagos",
+        "hotelPriceRange": "$25-200",
+        "hotels": [
+          {
+            "name": "Same as previous night",
+            "location": "Lagos",
+            "description": "",
+            "priceRange": "$25-200/night",
+            "category": "mid-range"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Benagil Sea Cave",
+            "description": "The domed cave with a hole open to the sky and its own beach. You cannot land there anymore — go by kayak or SUP from Praia de Benagil, or take a boat that noses inside. Kayak tours run €25-35.",
+            "hours": "Daylight, sea conditions permitting",
+            "price": "€25-35 kayak tour (~$28-39)",
+            "category": "nature",
+            "duration": "3 hours"
+          },
+          {
+            "name": "Sagres & Cabo de São Vicente",
+            "description": "The southwestern tip of Europe — a fortress on a headland and cliffs the Romans thought were the end of the world. Sunset here is a local ritual.",
+            "hours": "24 hours",
+            "price": "Free (fort €3)",
+            "category": "nature",
+            "duration": "Half day"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "O Camilo",
+            "description": "Perched above Praia do Camilo, doing grilled fish and clams with the best terrace view in Lagos.",
+            "priceRange": "$$$",
+            "cuisine": "Seafood"
+          }
+        ],
+        "tips": "Benagil boat operators oversell in July and August. Book the first slot of the morning — the light is better and the swell is usually calmer."
+      },
+      {
+        "day": 9,
+        "location": "Tavira",
+        "from": "Lagos → Tavira by train, or a slow beach day",
+        "travelMethod": "train / relax",
+        "travelTime": "~2h to Tavira",
+        "overnight": "Lagos or Tavira",
+        "hotelPriceRange": "$25-200",
+        "hotels": [
+          {
+            "name": "Same as previous night",
+            "location": "Lagos",
+            "description": "Or move east to Tavira for a quieter last night.",
+            "priceRange": "$25-200/night",
+            "category": "mid-range"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Tavira",
+            "description": "The Algarve town that tourism mostly missed — a Roman bridge, 20-odd churches, and a ferry to the sandbar island of Ilha de Tavira.",
+            "hours": "24 hours",
+            "price": "Ferry €2-3 (~$3)",
+            "category": "city",
+            "duration": "Half day"
+          },
+          {
+            "name": "Ria Formosa lagoon",
+            "description": "Protected wetlands of barrier islands and salt pans, full of flamingos and seahorses. Boat tours leave from Faro and Tavira.",
+            "hours": "Daylight",
+            "price": "Tour €25-35 (~$28-39)",
+            "category": "nature",
+            "duration": "3 hours"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Tavira's seafood grills",
+            "description": "The Algarve's best-value fish — whole grilled sea bream for around €12.",
+            "priceRange": "$$",
+            "cuisine": "Seafood"
+          }
+        ],
+        "tips": "If you'd rather not move again, Lagos does a fine last day: a morning at Meia Praia and an afternoon on a terrace."
+      },
+      {
+        "day": 10,
+        "location": "Faro",
+        "from": "Lagos/Tavira → Faro Airport by train + bus",
+        "travelMethod": "train + bus",
+        "travelTime": "~1h 30m from Lagos",
+        "overnight": "—",
+        "hotelPriceRange": "$0",
+        "hotels": [],
+        "attractions": [
+          {
+            "name": "Faro Airport",
+            "description": "Small and efficient — two hours is plenty. Regular trains run from Lagos and Tavira to Faro station, then a short bus or taxi to the terminal.",
+            "hours": "—",
+            "price": "€8-12 (~$9-13)",
+            "category": "transport",
+            "duration": "—"
+          }
+        ],
+        "foodHighlights": [],
+        "tips": "If you flew into Lisbon and out of Faro, you've saved yourself a four-hour backtrack. If not, the Faro–Lisbon train takes about three hours."
+      }
+    ]
+  },
+  {
+    "id": "costa_rica",
+    "name": "Costa Rica: Volcanoes & Surf",
+    "subtitle": "Cloud forest, hot springs, and Pacific beach towns",
+    "emoji": "🇨🇷",
+    "type": "international",
+    "primaryTransport": "mixed",
+    "totalDays": 9,
+    "countries": [
+      "Costa Rica"
+    ],
+    "currency": "CRC",
+    "bestMonths": "December–April (dry season); May and November are quiet and green",
+    "flightEstimate": {
+      "fromNYC": "$350-650",
+      "fromChicago": "$400-700",
+      "fromLA": "$400-750",
+      "fromDallas": "$300-550",
+      "notes": "One of the cheapest long-haul escapes from the US — under five hours from most southern hubs. Fly into San José (SJO) and home from Liberia (LIR) if you're ending on the Guanacaste coast; it saves a five-hour drive back. Christmas and Easter weeks are double the price."
+    },
+    "dailyBudgets": {
+      "budget": {
+        "perPersonPerDay": 80,
+        "label": "Budget",
+        "includes": "Hostel dorm ($15-30/night), casado lunches at sodas, shared shuttles, national park entry, surfboard rental",
+        "breakdown": {
+          "accommodation": "$15-30",
+          "meals": "$18-28",
+          "localTransport": "$10-18",
+          "activitiesEntrance": "$15-25",
+          "misc": "$8-12"
+        }
+      },
+      "midrange": {
+        "perPersonPerDay": 165,
+        "label": "Mid-range",
+        "includes": "Boutique lodge or eco-cabina ($80-140), guided wildlife walks, zipline and rafting tours, rental 4x4 split between travelers",
+        "breakdown": {
+          "accommodation": "$80-140",
+          "meals": "$40-55",
+          "localTransport": "$20-30",
+          "activitiesEntrance": "$35-50",
+          "misc": "$15-25"
+        }
+      },
+      "premium": {
+        "perPersonPerDay": 330,
+        "label": "Premium",
+        "includes": "Jungle luxury lodges with private decks ($250-450), private naturalist guides, domestic flights between regions, spa and thermal circuits"
+      }
+    },
+    "transportNotes": "Distances look short and take twice as long as you think — mountain roads are slow and often unpaved. Most travelers use shared shuttles (Interbus, Caribe Shuttle; $50-60 a leg, door to door) rather than renting. If you do rent, take a 4x4 and buy the mandatory liability insurance, which is never included in the online quote. Domestic flights on Sansa cut the San José–Guanacaste haul to 50 minutes for around $90. US dollars are accepted almost everywhere; carry colones for sodas and small shops.",
+    "highlights": [
+      "Arenal volcano hot springs",
+      "Monteverde cloud forest",
+      "Manuel Antonio wildlife",
+      "Santa Teresa surf"
+    ],
+    "tags": [
+      "Adventure",
+      "Surfing",
+      "Wildlife",
+      "Beaches",
+      "Nature",
+      "Budget-Friendly",
+      "International"
+    ],
+    "difficulty": {
+      "driveIntensity": 3,
+      "physicalActivity": 4,
+      "planningComplexity": 3,
+      "overall": 3.3
+    },
+    "tripDays": [
+      {
+        "day": 1,
+        "location": "La Fortuna",
+        "from": "Land at SJO → shuttle or drive north",
+        "travelMethod": "flight + shuttle",
+        "travelTime": "~3h from San José",
+        "overnight": "La Fortuna",
+        "hotelPriceRange": "$18-200",
+        "hotels": [
+          {
+            "name": "Selina La Fortuna",
+            "location": "La Fortuna",
+            "description": "Hostel-hotel hybrid with dorms, private rooms, a pool, and a coworking floor — the default landing spot for younger travelers and remote workers.",
+            "priceRange": "$20-45 dorm / $80-120 private",
+            "category": "hostel"
+          },
+          {
+            "name": "Nayara Springs",
+            "location": "Arenal",
+            "description": "Adults-only villas with private plunge pools fed by the volcano's springs. A genuine splurge.",
+            "priceRange": "$450-700/night",
+            "category": "luxury",
+            "stars": 5
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Arenal Volcano National Park",
+            "description": "A near-perfect cone that erupted continuously until 2010. The 1968 lava-flow trail crosses old flows with the volcano directly overhead — go late afternoon when the cloud usually lifts.",
+            "hours": "8:00–16:00",
+            "price": "$15 park entry",
+            "category": "nature",
+            "duration": "3 hours"
+          },
+          {
+            "name": "Tabacón or El Choyín hot springs",
+            "description": "Rivers heated by the volcano. Tabacón is the manicured resort version ($85); El Choyín is the free public river under the bridge where locals go with a cooler.",
+            "hours": "Tabacón 10:00–22:00; river 24h",
+            "price": "Free–$85",
+            "category": "relaxation",
+            "duration": "Evening"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Soda La Hormiga",
+            "description": "A 'soda' is a family kitchen serving casados — rice, beans, plantain, salad, and a protein for about $7. This is how you eat well here on very little.",
+            "priceRange": "$",
+            "cuisine": "Costa Rican"
+          }
+        ],
+        "tips": "Don't try to drive from SJO to La Fortuna in the dark on arrival day — the mountain roads have no lighting and plenty of switchbacks. Take the afternoon shuttle instead."
+      },
+      {
+        "day": 2,
+        "location": "La Fortuna (waterfalls & hanging bridges)",
+        "from": "Around La Fortuna",
+        "travelMethod": "car / shuttle",
+        "travelTime": "N/A",
+        "overnight": "La Fortuna",
+        "hotelPriceRange": "$18-200",
+        "hotels": [
+          {
+            "name": "Same as previous night",
+            "location": "La Fortuna",
+            "description": "",
+            "priceRange": "$18-200/night",
+            "category": "mid-range"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "La Fortuna Waterfall",
+            "description": "A 70m fall into a swimmable blue pool at the bottom of 500 steps. Going down is easy; the climb back out in humidity is the workout.",
+            "hours": "7:00–17:00",
+            "price": "$18",
+            "category": "nature",
+            "duration": "2 hours"
+          },
+          {
+            "name": "Mistico Hanging Bridges",
+            "description": "A rainforest loop crossing 15 suspension bridges at canopy height. Book the early guided walk — a naturalist with a scope will find sloths and eyelash vipers you'd walk straight past.",
+            "hours": "6:00–16:00",
+            "price": "$26 self-guided / $46 guided",
+            "category": "wildlife",
+            "duration": "3 hours"
+          },
+          {
+            "name": "Arenal ziplines & canyoning",
+            "description": "Some of the longest zipline runs in the country, plus waterfall rappelling in the canyons nearby. Half-day tours run $60-100.",
+            "hours": "Morning and afternoon departures",
+            "price": "$60-100",
+            "category": "adventure",
+            "duration": "Half day"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Don Rufino",
+            "description": "The town's best restaurant — proper cooking, good cocktails, and open-air seating on the main street.",
+            "priceRange": "$$$",
+            "cuisine": "Costa Rican / grill"
+          }
+        ],
+        "tips": "Book the hanging bridges for 6am. Wildlife is active at dawn and gone by nine, and you'll beat both the heat and the tour buses."
+      },
+      {
+        "day": 3,
+        "location": "Monteverde, Costa Rica",
+        "from": "Jeep-boat-jeep across Lake Arenal",
+        "travelMethod": "shuttle + boat",
+        "travelTime": "~3h 30m",
+        "overnight": "Monteverde / Santa Elena",
+        "hotelPriceRange": "$16-180",
+        "hotels": [
+          {
+            "name": "Selina Monteverde",
+            "location": "Santa Elena",
+            "description": "Dorms and privates with a fire pit — the social hub of the town.",
+            "priceRange": "$18-40 dorm / $70-110 private",
+            "category": "hostel"
+          },
+          {
+            "name": "Hotel Belmar",
+            "location": "Monteverde",
+            "description": "Family-run mountain lodge with big windows onto the forest and an excellent farm-to-table restaurant.",
+            "priceRange": "$180-280/night",
+            "category": "eco-lodge",
+            "stars": 4
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Jeep-boat-jeep crossing",
+            "description": "The scenic way between Arenal and Monteverde: a van to Lake Arenal, a boat across with the volcano behind you, then a van up the mountain. Faster and far better than driving around.",
+            "hours": "Morning and afternoon departures",
+            "price": "$30-35",
+            "category": "transport",
+            "duration": "3.5 hours"
+          },
+          {
+            "name": "Santa Elena",
+            "description": "The small town serving Monteverde — hostels, tour desks, coffee shops, and a couple of decent bars.",
+            "hours": "24 hours",
+            "price": "Free",
+            "category": "city",
+            "duration": "1 hour"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Taco Taco",
+            "description": "A walk-up window doing excellent fish tacos for a few dollars. Perennially the town's highest-rated cheap eat.",
+            "priceRange": "$",
+            "cuisine": "Tacos"
+          }
+        ],
+        "tips": "Monteverde sits at 1,400m and is genuinely cold and wet — the 'cloud' in cloud forest is not decorative. Pack a fleece and a rain shell."
+      },
+      {
+        "day": 4,
+        "location": "Monteverde, Costa Rica",
+        "from": "Around Monteverde",
+        "travelMethod": "walking / shuttle",
+        "travelTime": "N/A",
+        "overnight": "Monteverde",
+        "hotelPriceRange": "$16-180",
+        "hotels": [
+          {
+            "name": "Same as previous night",
+            "location": "Monteverde",
+            "description": "",
+            "priceRange": "$16-180/night",
+            "category": "mid-range"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Monteverde Cloud Forest Reserve",
+            "description": "Moss-hung, permanently misted forest with 400 bird species including the resplendent quetzal (best chance February–July). Entry is capped, so book online.",
+            "hours": "7:00–16:00",
+            "price": "$25",
+            "category": "wildlife",
+            "duration": "3-4 hours"
+          },
+          {
+            "name": "Selvatura or 100% Aventura zipline",
+            "description": "The canopy tour was invented here. 100% Aventura runs the longest line in Latin America at 1.6km, plus a Superman line you fly face-down.",
+            "hours": "8:00–15:00",
+            "price": "$50-75",
+            "category": "adventure",
+            "duration": "3 hours"
+          },
+          {
+            "name": "Night walk",
+            "description": "Two-thirds of the forest's animals are nocturnal. A guided night walk turns up kinkajous, sloths, tarantulas, and glass frogs.",
+            "hours": "17:30 and 19:30 departures",
+            "price": "$25-30",
+            "category": "wildlife",
+            "duration": "2 hours"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Café Monteverde",
+            "description": "Coffee grown on the slopes below, with a tour of the farm if you want it. The cupping is genuinely interesting.",
+            "priceRange": "$",
+            "cuisine": "Coffee"
+          }
+        ],
+        "tips": "Bring binoculars or take a guide — the canopy is high and dense, and unguided visitors routinely see a fraction of what's there."
+      },
+      {
+        "day": 5,
+        "location": "Santa Teresa, Costa Rica",
+        "from": "Shuttle south to the Nicoya Peninsula",
+        "travelMethod": "shuttle + ferry",
+        "travelTime": "~5-6h",
+        "overnight": "Santa Teresa",
+        "hotelPriceRange": "$20-250",
+        "hotels": [
+          {
+            "name": "Selina Santa Teresa",
+            "location": "Santa Teresa",
+            "description": "Beachfront dorms and privates with a surf school attached — the social center of the town.",
+            "priceRange": "$22-50 dorm / $90-140 private",
+            "category": "hostel"
+          },
+          {
+            "name": "Nantipa",
+            "location": "Santa Teresa",
+            "description": "Barefoot-luxury beach bungalows right on the sand.",
+            "priceRange": "$350-550/night",
+            "category": "boutique",
+            "stars": 5
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Santa Teresa beach",
+            "description": "Four kilometers of grey-sand beach with a consistent year-round break, and one of the best sunsets on the Pacific coast. The whole town comes down for it.",
+            "hours": "24 hours",
+            "price": "Free",
+            "category": "beach",
+            "duration": "Half day"
+          },
+          {
+            "name": "Surf lessons",
+            "description": "The beach break is forgiving and every second building rents boards. Group lessons run $45-55, board rental about $15 a day.",
+            "hours": "Daylight; best at mid tide",
+            "price": "$45-55 lesson",
+            "category": "adventure",
+            "duration": "2 hours"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Product C",
+            "description": "Oyster bar and fish counter — a surprisingly sharp seafood operation for a surf town.",
+            "priceRange": "$$",
+            "cuisine": "Seafood"
+          }
+        ],
+        "tips": "This is the longest transfer of the trip. The alternative is a 50-minute Sansa flight from San José to Tambor for around $90, which many people decide is worth it."
+      },
+      {
+        "day": 6,
+        "location": "Santa Teresa, Costa Rica (surf & Montezuma)",
+        "from": "Around the Nicoya Peninsula",
+        "travelMethod": "quad / shuttle",
+        "travelTime": "~45 min to Montezuma",
+        "overnight": "Santa Teresa",
+        "hotelPriceRange": "$20-250",
+        "hotels": [
+          {
+            "name": "Same as previous night",
+            "location": "Santa Teresa",
+            "description": "",
+            "priceRange": "$20-250/night",
+            "category": "mid-range"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Montezuma Waterfalls",
+            "description": "Three-tier falls with a deep swimming pool. The scramble up the riverbed is slippery — proper shoes, and don't jump from the top rocks regardless of who else is.",
+            "hours": "Daylight",
+            "price": "Free (parking $2)",
+            "category": "nature",
+            "duration": "3 hours"
+          },
+          {
+            "name": "Cabo Blanco Absolute Nature Reserve",
+            "description": "Costa Rica's first protected area, at the tip of the peninsula. A 4.5km trail through dry forest to an empty beach with howler monkeys overhead.",
+            "hours": "8:00–16:00; closed Mon–Tue",
+            "price": "$12",
+            "category": "wildlife",
+            "duration": "4 hours"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Zwart Café",
+            "description": "Breakfast institution — açaí bowls, big coffees, and the entire surf crowd by 8am.",
+            "priceRange": "$$",
+            "cuisine": "Café"
+          }
+        ],
+        "tips": "Quad bikes are how everyone gets around here because the roads are dust and potholes. Drive slowly — accidents among visitors are extremely common."
+      },
+      {
+        "day": 7,
+        "location": "Manuel Antonio",
+        "from": "Ferry to Puntarenas, then south along the coast",
+        "travelMethod": "ferry + shuttle",
+        "travelTime": "~5h",
+        "overnight": "Manuel Antonio / Quepos",
+        "hotelPriceRange": "$18-220",
+        "hotels": [
+          {
+            "name": "Selina Manuel Antonio",
+            "location": "Manuel Antonio",
+            "description": "Jungle-set dorms and privates with a pool, on the road between Quepos and the park.",
+            "priceRange": "$20-45 dorm / $85-130 private",
+            "category": "hostel"
+          },
+          {
+            "name": "Arenas del Mar",
+            "location": "Manuel Antonio",
+            "description": "Beachfront eco-luxury with sloths in the trees around the rooms.",
+            "priceRange": "$400-600/night",
+            "category": "eco-luxury",
+            "stars": 5
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Quepos & the coastal road",
+            "description": "The working town next to the park, with a marina and far cheaper food than the hotel strip.",
+            "hours": "24 hours",
+            "price": "Free",
+            "category": "city",
+            "duration": "1 hour"
+          },
+          {
+            "name": "Playa Biesanz",
+            "description": "A sheltered cove down a short forest trail — calm swimming when the main beaches are rough.",
+            "hours": "Daylight",
+            "price": "Free",
+            "category": "beach",
+            "duration": "2 hours"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "El Avión",
+            "description": "A bar built into the fuselage of a 1954 Fairchild C-123 with a sunset view over the Pacific. Touristy, and still worth one drink.",
+            "priceRange": "$$",
+            "cuisine": "Bar / grill"
+          }
+        ],
+        "tips": "The ferry from Paquera to Puntarenas takes about 70 minutes and runs a handful of times a day — check the schedule, because missing one costs you two hours."
+      },
+      {
+        "day": 8,
+        "location": "Manuel Antonio",
+        "from": "Around Manuel Antonio",
+        "travelMethod": "walking",
+        "travelTime": "N/A",
+        "overnight": "Manuel Antonio",
+        "hotelPriceRange": "$18-220",
+        "hotels": [
+          {
+            "name": "Same as previous night",
+            "location": "Manuel Antonio",
+            "description": "",
+            "priceRange": "$18-220/night",
+            "category": "mid-range"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Manuel Antonio National Park",
+            "description": "The country's smallest and most visited park, and still the easiest place to see sloths, capuchins, and squirrel monkeys — often within the first ten minutes. Entry is capped and must be booked online in advance; it's closed Tuesdays.",
+            "hours": "7:00–16:00; closed Tue",
+            "price": "$18.08 (book online)",
+            "category": "wildlife",
+            "duration": "4 hours"
+          },
+          {
+            "name": "Playa Manuel Antonio",
+            "description": "The white-sand crescent inside the park boundary, backed by jungle. Keep food sealed — the capuchins are practiced thieves.",
+            "hours": "Park hours",
+            "price": "Included in park entry",
+            "category": "beach",
+            "duration": "2 hours"
+          }
+        ],
+        "foodHighlights": [
+          {
+            "name": "Sodas in Quepos",
+            "description": "Casados and fresh fruit batidos for a fraction of the hotel-strip prices — the walk into town pays for itself.",
+            "priceRange": "$",
+            "cuisine": "Costa Rican"
+          }
+        ],
+        "tips": "Guides wait at the entrance for about $20 a head. It's genuinely worth it — they carry scopes and will show you a dozen animals you would never have spotted alone."
+      },
+      {
+        "day": 9,
+        "location": "San José, Costa Rica",
+        "from": "Shuttle or Sansa flight to SJO",
+        "travelMethod": "shuttle / flight",
+        "travelTime": "~3h by road, ~25 min by air",
+        "overnight": "—",
+        "hotelPriceRange": "$0",
+        "hotels": [],
+        "attractions": [
+          {
+            "name": "San José (SJO)",
+            "description": "Allow three hours for an international departure, plus a generous buffer on the road from the coast — the Costanera can back up badly.",
+            "hours": "—",
+            "price": "Shuttle $55 / flight ~$90",
+            "category": "transport",
+            "duration": "—"
+          }
+        ],
+        "foodHighlights": [],
+        "tips": "There's a $29 departure tax, though it's now included in most airline tickets — check yours so you're not caught out at the counter."
+      }
+    ]
   }
 ]

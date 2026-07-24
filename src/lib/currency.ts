@@ -71,6 +71,7 @@ export const CURRENCIES: CurrencyInfo[] = [
   { code: "MXN", symbol: "MX$", name: "Mexican Peso" },
   { code: "CHF", symbol: "CHF", name: "Swiss Franc" },
   { code: "NZD", symbol: "NZ$", name: "New Zealand Dollar" },
+  { code: "CRC", symbol: "₡", name: "Costa Rican Colón" },
 ];
 
 const CURRENCY_BY_CODE: Record<string, CurrencyInfo> = Object.fromEntries(

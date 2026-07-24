@@ -46,6 +46,35 @@ const DESTINATION_KEYWORDS: ReadonlyArray<[string, readonly string[]]> = [
     "interstate",
     ["i-80", "i80", "i-70", "i70", "transcontinental", "cross country", "cross-country"],
   ],
+  [
+    "japan_highlights",
+    [
+      "japan", "japanese", "tokyo", "kyoto", "osaka", "hiroshima", "nara",
+      "hakone", "shibuya", "shinjuku", "miyajima", "mount fuji", "fuji",
+    ],
+  ],
+  [
+    "paris_france",
+    [
+      "paris", "france", "french", "versailles", "montmartre", "louvre",
+      "eiffel", "marais", "seine",
+    ],
+  ],
+  [
+    "portugal_coast",
+    [
+      "portugal", "portuguese", "lisbon", "lisboa", "porto", "oporto",
+      "algarve", "sintra", "lagos", "ericeira", "madeira", "azores", "tavira",
+    ],
+  ],
+  [
+    "costa_rica",
+    [
+      "costa rica", "costa rican", "san jose", "arenal", "la fortuna",
+      "monteverde", "manuel antonio", "santa teresa", "tamarindo",
+      "nicoya", "guanacaste", "jaco",
+    ],
+  ],
 ];
 
 /** Interest value → keywords matched against a template's tags. */

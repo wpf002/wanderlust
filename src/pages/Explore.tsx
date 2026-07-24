@@ -21,6 +21,8 @@ const FILTERS = [
   { id: "road_trip", label: "Road Trip" },
   { id: "international", label: "International" },
   { id: "budget", label: "Budget-Friendly" },
+  { id: "nightlife", label: "Nightlife & Food" },
+  { id: "adventure", label: "Adventure & Surf" },
   { id: "nature", label: "Nature & Parks" },
   { id: "coastal", label: "Coastal" },
 ];
@@ -42,6 +44,22 @@ const COASTAL_KEYWORDS = [
   "gulf",
   "pacific",
   "atlantic",
+];
+const NIGHTLIFE_KEYWORDS = [
+  "nightlife",
+  "pubs",
+  "music",
+  "food scene",
+  "food & wine",
+  "city",
+];
+const ADVENTURE_KEYWORDS = [
+  "adventure",
+  "surfing",
+  "surf",
+  "hiking",
+  "sports",
+  "epic scenery",
 ];
 
 interface ExploreProps {
@@ -92,7 +110,26 @@ export default function ExplorePage({
           if (filter === "road_trip" && trip.type !== "road_trip") return false;
           if (filter === "international" && trip.type !== "international")
             return false;
-          if (filter === "budget" && estimateTripCosts(trip, settings).perPerson > 2000)
+          // "Budget-Friendly" means the trip *can* be done cheaply — judge it at
+          // its budget tier, not whatever tier is currently selected.
+          if (
+            filter === "budget" &&
+            estimateTripCosts(trip, { ...settings, budget: "budget" }).perPerson > 2000
+          )
+            return false;
+          if (
+            filter === "nightlife" &&
+            !trip.tags.some((t) =>
+              NIGHTLIFE_KEYWORDS.some((k) => t.toLowerCase().includes(k)),
+            )
+          )
+            return false;
+          if (
+            filter === "adventure" &&
+            !trip.tags.some((t) =>
+              ADVENTURE_KEYWORDS.some((k) => t.toLowerCase().includes(k)),
+            )
+          )
             return false;
           if (
             filter === "nature" &&
