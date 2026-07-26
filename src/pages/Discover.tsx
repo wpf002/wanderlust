@@ -1,9 +1,9 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useLocation } from "wouter";
 import {
   ArrowRight,
   CalendarDays,
-  GitFork,
+  Copy,
   Loader2,
   Telescope,
   Users,
@@ -66,7 +66,7 @@ function DiscoverCard({
     try {
       await onFork(plan, trimmed);
     } catch {
-      setError("Couldn't fork this trip. Try again.");
+      setError("Couldn't copy this trip. Try again.");
       setBusy(false);
     }
   }
@@ -93,8 +93,8 @@ function DiscoverCard({
 
       <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
         <Stat icon={<Users size={12} />}>{peopleLabel(plan.memberCount)}</Stat>
-        <Stat icon={<GitFork size={12} />}>
-          {plan.forkCount} {plan.forkCount === 1 ? "fork" : "forks"}
+        <Stat icon={<Copy size={12} />}>
+          {plan.forkCount === 1 ? "1 copy" : `${plan.forkCount} copies`}
         </Stat>
         {estimate && (
           <Stat icon={<Wallet size={12} />}>
@@ -114,7 +114,7 @@ function DiscoverCard({
             data-testid={`btn-fork-${plan.id}`}
             className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-[var(--color-border)] px-4 py-2.5 text-sm font-semibold transition-colors hover:border-[var(--color-primary)]/50 hover:bg-[var(--color-surface-offset)]"
           >
-            <GitFork size={14} /> Fork this trip
+            <Copy size={14} /> Make my own copy
           </button>
         ) : (
           <div className="rounded-xl border border-[var(--color-primary)]/40 bg-[var(--color-bg)] p-3">
@@ -127,7 +127,7 @@ function DiscoverCard({
                   setOpen(false);
                   setError(null);
                 }}
-                aria-label="Cancel fork"
+                aria-label="Cancel copy"
                 className="rounded-lg p-1 text-[var(--color-text-muted)] hover:bg-[var(--color-surface-offset)]"
               >
                 <X size={13} />
@@ -148,7 +148,7 @@ function DiscoverCard({
                 className="flex items-center gap-1.5 rounded-xl bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
               >
                 {busy ? <Loader2 size={13} className="animate-spin" /> : <ArrowRight size={13} />}
-                {busy ? "Forking…" : "Fork"}
+                {busy ? "Copying…" : "Copy trip"}
               </button>
             </div>
             {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
@@ -159,12 +159,28 @@ function DiscoverCard({
   );
 }
 
+type SortKey = "recent" | "popular";
+
+const SORTS: { key: SortKey; label: string }[] = [
+  { key: "recent", label: "Recently added" },
+  { key: "popular", label: "Most copied" },
+];
+
 /** `/discover` — published group trips anyone can copy. */
 export default function DiscoverPage() {
   const [, navigate] = useLocation();
   const trips = useTrips();
   const [plans, setPlans] = useState<DiscoverPlan[] | null>(null);
   const [failed, setFailed] = useState(false);
+  const [sort, setSort] = useState<SortKey>("recent");
+
+  // The server already returns newest-first, so "recent" keeps that order and
+  // "popular" ranks by copy count with the newest breaking ties.
+  const sortedPlans = useMemo(() => {
+    if (!plans) return plans;
+    if (sort === "recent") return plans;
+    return [...plans].sort((a, b) => b.forkCount - a.forkCount);
+  }, [plans, sort]);
 
   useEffect(() => {
     let cancelled = false;
@@ -195,16 +211,35 @@ export default function DiscoverPage() {
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       <Navbar />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        <div className="mb-6 flex items-center gap-3">
+        <div className="mb-6 flex flex-wrap items-center gap-x-3 gap-y-4">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--color-primary)]/10">
             <Telescope size={18} className="text-[var(--color-primary)]" />
           </div>
           <div>
             <h1 className="font-display text-xl font-bold">Discover</h1>
             <p className="text-sm text-[var(--color-text-muted)]">
-              Real trips other people planned. Fork one and make it yours.
+              Real trips other people planned. Copy one and make it yours.
             </p>
           </div>
+
+          {/* Sort — only worth showing once there's more than one trip to order. */}
+          {sortedPlans && sortedPlans.length > 1 && (
+            <div className="ml-auto flex rounded-xl bg-[var(--color-surface-offset)]/60 p-1">
+              {SORTS.map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setSort(key)}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                    sort === key
+                      ? "bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm"
+                      : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {plans === null ? (
@@ -227,7 +262,7 @@ export default function DiscoverPage() {
             <p className="mx-auto mt-2 max-w-sm text-sm text-[var(--color-text-muted)]">
               {failed
                 ? "The published trips couldn't be loaded. Refresh to try again."
-                : "Be the first. Open one of your group trips and hit “Share publicly” — your itinerary shows up here for anyone to fork."}
+                : "Be the first. Open one of your group trips and hit “Share publicly” — your itinerary shows up here for anyone to copy."}
             </p>
             <button
               onClick={() => navigate("/")}
@@ -238,7 +273,7 @@ export default function DiscoverPage() {
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {plans.map((plan) => (
+            {sortedPlans!.map((plan) => (
               <DiscoverCard
                 key={plan.id}
                 plan={plan}
