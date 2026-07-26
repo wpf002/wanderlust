@@ -114,7 +114,7 @@ function DiscoverCard({
             data-testid={`btn-fork-${plan.id}`}
             className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-[var(--color-border)] px-4 py-2.5 text-sm font-semibold transition-colors hover:border-[var(--color-primary)]/50 hover:bg-[var(--color-surface-offset)]"
           >
-            <Copy size={14} /> Make my own copy
+            <Copy size={14} /> Copy Trip
           </button>
         ) : (
           <div className="rounded-xl border border-[var(--color-primary)]/40 bg-[var(--color-bg)] p-3">
@@ -148,7 +148,7 @@ function DiscoverCard({
                 className="flex items-center gap-1.5 rounded-xl bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
               >
                 {busy ? <Loader2 size={13} className="animate-spin" /> : <ArrowRight size={13} />}
-                {busy ? "Copying…" : "Copy trip"}
+                {busy ? "Copying…" : "Copy Trip"}
               </button>
             </div>
             {error && <p className="mt-2 text-xs text-red-500">{error}</p>}

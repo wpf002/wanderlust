@@ -342,7 +342,7 @@ export default function GroupPlanPage({ code }: { code: string }) {
               className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[var(--color-primary)] text-white text-sm font-semibold disabled:opacity-50"
             >
               <GitFork size={15} />
-              {forking ? "Copying…" : "Make my own copy"}
+              {forking ? "Copying…" : "Copy Trip"}
             </button>
           </div>
         </div>
