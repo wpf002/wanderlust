@@ -1336,6 +1336,13 @@ if (process.env.NODE_ENV === "production") {
         next();
         return;
       }
+      // A missing upload is a missing file, not a route into the app. Without
+      // this it falls through to index.html and a deleted photo answers 200
+      // with the page shell, which reads as "still there".
+      if (req.path.startsWith("/uploads/")) {
+        res.status(404).json({ error: "Not found" });
+        return;
+      }
       res.sendFile(path.join(clientDir, "index.html"));
     });
   } else {
