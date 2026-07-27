@@ -31,10 +31,12 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
-// Railway terminates TLS in front of us, so the client address arrives in
-// X-Forwarded-For. Without this every request looks like it comes from the
-// proxy and the rate limits below would apply to everyone at once.
-app.set("trust proxy", 1);
+// Railway puts two hops in front of us: its edge, then the internal router.
+// X-Forwarded-For arrives as "client, edge". Trusting only one hop leaves
+// `req.ip` pointing at that internal address, which changes between requests —
+// so one person counted as several, double-counting reports and handing out
+// extra rate-limit budget. Trust both hops to land on the real client.
+app.set("trust proxy", 2);
 app.use(express.json());
 
 /* ---------- Rate limiting ---------- */
@@ -96,18 +98,6 @@ setInterval(() => {
   const now = Date.now();
   for (const [key, entry] of hits) if (now >= entry.resetAt) hits.delete(key);
 }, 10 * 60_000).unref();
-
-// TEMPORARY: reports were double-counting in production and req.ip is the
-// suspect. Remove once the cause is known.
-app.get("/api/_whoami", (req, res) => {
-  res.json({
-    key: clientKey(req),
-    ip: req.ip,
-    ips: req.ips,
-    xff: req.get("x-forwarded-for") ?? null,
-    envoy: req.get("x-envoy-external-address") ?? null,
-  });
-});
 
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
