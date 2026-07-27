@@ -8,8 +8,10 @@ import {
   Copy,
   GitFork,
   Globe2,
+  Images,
   ListChecks,
   Loader2,
+  MessagesSquare,
   Users,
   Wallet,
 } from "lucide-react";
@@ -29,6 +31,8 @@ const CrewPanel = lazy(() => import("./group/CrewPanel"));
 const DatePollPanel = lazy(() => import("./group/DatePollPanel"));
 const MoneyPanel = lazy(() => import("./group/MoneyPanel"));
 const PackingPanel = lazy(() => import("./group/PackingPanel"));
+const TalkPanel = lazy(() => import("./group/TalkPanel"));
+const AlbumPanel = lazy(() => import("./group/AlbumPanel"));
 const InTripPanel = lazy(() => import("./group/InTripPanel"));
 
 export interface PanelProps {
@@ -40,7 +44,7 @@ export interface PanelProps {
   totalDays: number;
 }
 
-type TabId = "crew" | "dates" | "money" | "packing" | "trip";
+type TabId = "crew" | "dates" | "money" | "packing" | "talk" | "album" | "trip";
 
 /** `short` keeps every tab labelled on a phone, where "On the trip" won't fit. */
 const TABS: { id: TabId; label: string; short: string; icon: typeof Users }[] = [
@@ -48,6 +52,8 @@ const TABS: { id: TabId; label: string; short: string; icon: typeof Users }[] = 
   { id: "dates", label: "Dates", short: "Dates", icon: CalendarDays },
   { id: "money", label: "Money", short: "Money", icon: Wallet },
   { id: "packing", label: "Packing", short: "Pack", icon: Backpack },
+  { id: "talk", label: "Talk", short: "Talk", icon: MessagesSquare },
+  { id: "album", label: "Album", short: "Album", icon: Images },
   { id: "trip", label: "On the trip", short: "Trip", icon: ListChecks },
 ];
 
@@ -352,25 +358,29 @@ export default function GroupPlanPage({ code }: { code: string }) {
       )}
 
       {/* Tabs */}
-      <div
-        className="mb-5 grid gap-1 rounded-xl bg-[var(--color-surface-offset)]/60 p-1"
-        style={{ gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))` }}
-      >
-        {TABS.map(({ id, label, short, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => setTab(id)}
-            className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition-colors ${
-              tab === id
-                ? "bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm"
-                : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
-            }`}
-          >
-            <Icon size={13} className="shrink-0" />
-            <span className="sm:hidden">{short}</span>
-            <span className="hidden sm:inline">{label}</span>
-          </button>
-        ))}
+      {/* Too many tabs to divide a phone's width evenly, so they scroll there
+          and only become an equal grid once there's room. */}
+      <div className="mb-5 -mx-4 overflow-x-auto px-4 sm:mx-0 sm:overflow-visible sm:px-0">
+        <div
+          className="flex w-max min-w-full gap-1 rounded-xl bg-[var(--color-surface-offset)]/60 p-1 sm:grid"
+          style={{ gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))` }}
+        >
+          {TABS.map(({ id, label, short, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setTab(id)}
+              className={`flex shrink-0 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors sm:px-2 ${
+                tab === id
+                  ? "bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm"
+                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+              }`}
+            >
+              <Icon size={13} className="shrink-0" />
+              <span className="sm:hidden">{short}</span>
+              <span className="hidden sm:inline">{label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <Suspense
@@ -389,6 +399,12 @@ export default function GroupPlanPage({ code }: { code: string }) {
         )}
         {tab === "packing" && (
           <PackingPanel plan={plan} me={me} onPlan={onPlan} totalDays={totalDays} />
+        )}
+        {tab === "talk" && (
+          <TalkPanel plan={plan} me={me} onPlan={onPlan} totalDays={totalDays} />
+        )}
+        {tab === "album" && (
+          <AlbumPanel plan={plan} me={me} onPlan={onPlan} totalDays={totalDays} />
         )}
         {tab === "trip" && (
           <InTripPanel plan={plan} me={me} onPlan={onPlan} totalDays={totalDays} />

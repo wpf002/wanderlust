@@ -119,6 +119,32 @@ CREATE TABLE IF NOT EXISTS plan_members (
   token     TEXT
 );
 
+-- Trip discussion. Members post with their member_id; on a *published* trip a
+-- visitor can ask a question before copying it, and they only have a name.
+CREATE TABLE IF NOT EXISTS plan_comments (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  plan_id     TEXT NOT NULL,
+  member_id   INTEGER,
+  author_name TEXT,
+  body        TEXT NOT NULL,
+  parent_id   INTEGER,
+  created_at  TEXT NOT NULL
+);
+
+-- Shared trip album. The file itself lives on disk under DATA_DIR/uploads;
+-- this row is the metadata and ordering.
+CREATE TABLE IF NOT EXISTS plan_photos (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  plan_id    TEXT NOT NULL,
+  member_id  INTEGER,
+  file       TEXT NOT NULL,
+  caption    TEXT,
+  day_number INTEGER,
+  width      INTEGER,
+  height     INTEGER,
+  created_at TEXT NOT NULL
+);
+
 -- Group packing list. Two kinds of item, which is what makes a shared list
 -- different from a solo one:
 --   shared = 1  → one for the whole group (a cooler, the speaker). One person
@@ -315,6 +341,28 @@ export interface PlanExpenseRow {
   split_ids: string;
   category: string | null;
   day_number: number | null;
+  created_at: string;
+}
+
+export interface PlanCommentRow {
+  id: number;
+  plan_id: string;
+  member_id: number | null;
+  author_name: string | null;
+  body: string;
+  parent_id: number | null;
+  created_at: string;
+}
+
+export interface PlanPhotoRow {
+  id: number;
+  plan_id: string;
+  member_id: number | null;
+  file: string;
+  caption: string | null;
+  day_number: number | null;
+  width: number | null;
+  height: number | null;
   created_at: string;
 }
 

@@ -2,9 +2,12 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useLocation } from "wouter";
 import {
   ArrowRight,
+  Backpack,
   CalendarDays,
   Copy,
+  Images,
   Loader2,
+  MessageCircle,
   Telescope,
   Users,
   Wallet,
@@ -14,6 +17,7 @@ import Navbar from "@/components/Navbar";
 import { useTrips } from "@/data/useTrips";
 import { DEFAULT_SETTINGS, type Trip } from "@/data/types";
 import { estimateTripCosts, formatCurrency } from "@/lib/costs";
+import { tripColors } from "@/lib/tripTheme";
 import { plansApi, setMyMemberId, type DiscoverPlan } from "@/lib/plans";
 
 /** "4 people" / "1 person" — the group behind a published plan. */
@@ -57,6 +61,7 @@ function DiscoverCard({
   const estimate = trip
     ? estimateTripCosts(trip, { ...DEFAULT_SETTINGS, ...plan.settings })
     : null;
+  const scheme = trip ? tripColors(trip) : null;
 
   async function submit() {
     const trimmed = name.trim();
@@ -87,6 +92,30 @@ function DiscoverCard({
         </div>
       </div>
 
+      {/* A photo sells a trip better than any blurb. Every card gets a cover
+          slot either way, so a trip with an album doesn't tower over one
+          without and leave a hole in the row. */}
+      <div
+        className={`mt-3 h-36 overflow-hidden rounded-xl ${
+          plan.coverUrl || !scheme
+            ? "bg-[var(--color-surface-offset)]"
+            : scheme.banner
+        }`}
+      >
+        {plan.coverUrl ? (
+          <img
+            src={plan.coverUrl}
+            alt=""
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center text-5xl opacity-30">
+            {trip?.emoji ?? "🧭"}
+          </div>
+        )}
+      </div>
+
       <p className="mt-3 min-h-[2.5rem] text-sm leading-snug text-[var(--color-text-muted)] line-clamp-3">
         {plan.blurb || trip?.subtitle || "No description yet."}
       </p>
@@ -101,6 +130,12 @@ function DiscoverCard({
             {formatCurrency(estimate.perPerson)}
             <span className="text-[var(--color-text-faint)]">/person</span>
           </Stat>
+        )}
+        {plan.photoCount > 0 && (
+          <Stat icon={<Images size={12} />}>{plan.photoCount}</Stat>
+        )}
+        {plan.commentCount > 0 && (
+          <Stat icon={<MessageCircle size={12} />}>{plan.commentCount}</Stat>
         )}
         {plan.startDate && (
           <Stat icon={<CalendarDays size={12} />}>{formatStartDate(plan.startDate)}</Stat>
@@ -240,6 +275,31 @@ export default function DiscoverPage() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Nothing on a card says a whole shared workspace opens behind it. */}
+        <div className="mb-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+          <h2 className="font-semibold mb-1">A copy isn't just the itinerary</h2>
+          <p className="text-sm text-[var(--color-text-muted)] mb-4 max-w-2xl">
+            Every trip here opens a space you share with the people you're going
+            with. Send them the link — no accounts, no spreadsheet.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { icon: <CalendarDays size={14} />, title: "Agree on dates", body: "Everyone taps the days they're free; the overlap picks itself." },
+              { icon: <Wallet size={14} />, title: "Settle up", body: "Log what you paid and see the fewest payments that square everyone." },
+              { icon: <Backpack size={14} />, title: "Pack together", body: "One list. Shared gear gets claimed, everything else you tick yourself." },
+              { icon: <Images size={14} />, title: "Keep the photos", body: "A shared album and a running thread, during and after the trip." },
+            ].map(({ icon, title, body }) => (
+              <div key={title} className="rounded-xl bg-[var(--color-surface-offset)]/60 p-3">
+                <div className="mb-1 flex items-center gap-1.5 text-sm font-medium">
+                  <span className="text-[var(--color-primary)]">{icon}</span>
+                  {title}
+                </div>
+                <p className="text-xs leading-snug text-[var(--color-text-muted)]">{body}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
         {plans === null ? (

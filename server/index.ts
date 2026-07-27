@@ -14,6 +14,8 @@ import {
   type NoteRow,
   type NotifPrefRow,
   type PlanAssignmentRow,
+  type PlanCommentRow,
+  type PlanPhotoRow,
   type PlanPackingCheckRow,
   type PlanPackingRow,
   type PlanDateRow,
@@ -30,6 +32,24 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 app.use(express.json());
+
+/**
+ * Trip photos live on the same volume as the database, so the app stays
+ * self-contained — no object-store account or credentials to configure. That
+ * caps the album at whatever the disk holds, which is the right trade until
+ * there's enough usage to justify moving it.
+ */
+const uploadsDir = path.join(process.env.DATA_DIR || __dirname, "uploads");
+fs.mkdirSync(uploadsDir, { recursive: true });
+app.use(
+  "/uploads",
+  express.static(uploadsDir, {
+    immutable: true,
+    maxAge: "365d",
+    // Uploaded bytes are only ever served back as images, never executed.
+    setHeaders: (res) => res.setHeader("Content-Security-Policy", "default-src 'none'"),
+  }),
+);
 
 const now = () => new Date().toISOString();
 const newSlug = () => randomBytes(6).toString("base64url");
@@ -563,6 +583,12 @@ function planPayload(planId: string) {
   const packing = db
     .prepare("SELECT * FROM plan_packing WHERE plan_id = ? ORDER BY id ASC")
     .all(planId) as PlanPackingRow[];
+  const comments = db
+    .prepare("SELECT * FROM plan_comments WHERE plan_id = ? ORDER BY id ASC")
+    .all(planId) as PlanCommentRow[];
+  const photos = db
+    .prepare("SELECT * FROM plan_photos WHERE plan_id = ? ORDER BY id DESC")
+    .all(planId) as PlanPhotoRow[];
   const packingChecks = db
     .prepare(
       `SELECT c.* FROM plan_packing_checks c
@@ -614,6 +640,24 @@ function planPayload(planId: string) {
       dayNumber: j.day_number,
       text: j.text,
       createdAt: j.created_at,
+    })),
+    comments: comments.map((c) => ({
+      id: c.id,
+      memberId: c.member_id,
+      authorName: c.author_name,
+      body: c.body,
+      parentId: c.parent_id,
+      createdAt: c.created_at,
+    })),
+    photos: photos.map((p) => ({
+      id: p.id,
+      memberId: p.member_id,
+      url: `/uploads/${p.file}`,
+      caption: p.caption,
+      dayNumber: p.day_number,
+      width: p.width,
+      height: p.height,
+      createdAt: p.created_at,
     })),
     packing: packing.map((p) => ({
       id: p.id,
@@ -872,6 +916,142 @@ app.delete("/api/plans/:id/assignments/:assignmentId", (req, res) => {
   res.json(planPayload(id));
 });
 
+/* ---------- Shared trip album ---------- */
+
+/** Only formats a browser will render as an image, mapped to a file suffix. */
+const PHOTO_TYPES: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+};
+
+/**
+ * Upload one photo as raw bytes with its Content-Type — no multipart parser
+ * and no extra dependency. Caption and day ride along as query params.
+ */
+app.post(
+  "/api/plans/:id/photos",
+  express.raw({ type: Object.keys(PHOTO_TYPES), limit: "12mb" }),
+  (req, res) => {
+    const id = req.params.id.toUpperCase();
+    const me = requireMember(req, res, id);
+    if (!me) return;
+
+    const ext = PHOTO_TYPES[String(req.get("content-type") ?? "").split(";")[0].trim()];
+    if (!ext) return res.status(415).json({ error: "Send a JPEG, PNG, WebP or GIF" });
+    const bytes = req.body as Buffer;
+    if (!Buffer.isBuffer(bytes) || bytes.length === 0) {
+      return res.status(400).json({ error: "Empty upload" });
+    }
+
+    const file = `${id}-${randomBytes(8).toString("hex")}.${ext}`;
+    fs.writeFileSync(path.join(uploadsDir, file), bytes);
+
+    const caption = String(req.query.caption ?? "").trim().slice(0, 200) || null;
+    const dayRaw = Number(req.query.day);
+    const width = Number(req.query.w);
+    const height = Number(req.query.h);
+    db.prepare(
+      `INSERT INTO plan_photos (plan_id, member_id, file, caption, day_number, width, height, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).run(
+      id,
+      me.id,
+      file,
+      caption,
+      Number.isFinite(dayRaw) && dayRaw > 0 ? dayRaw : null,
+      Number.isFinite(width) && width > 0 ? width : null,
+      Number.isFinite(height) && height > 0 ? height : null,
+      new Date().toISOString(),
+    );
+    touchPlan(id);
+    res.json(planPayload(id));
+  },
+);
+
+app.patch("/api/plans/:id/photos/:photoId", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  if (!requireMember(req, res, id)) return;
+  const caption = String(req.body?.caption ?? "").slice(0, 200);
+  db.prepare("UPDATE plan_photos SET caption = ? WHERE plan_id = ? AND id = ?").run(
+    caption || null,
+    id,
+    Number(req.params.photoId),
+  );
+  touchPlan(id);
+  res.json(planPayload(id));
+});
+
+app.delete("/api/plans/:id/photos/:photoId", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  if (!requireMember(req, res, id)) return;
+  const photoId = Number(req.params.photoId);
+  const row = db
+    .prepare("SELECT file FROM plan_photos WHERE plan_id = ? AND id = ?")
+    .get(id, photoId) as { file: string } | undefined;
+  if (row) {
+    // Don't leave the bytes behind when the row goes.
+    fs.rmSync(path.join(uploadsDir, row.file), { force: true });
+    db.prepare("DELETE FROM plan_photos WHERE plan_id = ? AND id = ?").run(id, photoId);
+  }
+  touchPlan(id);
+  res.json(planPayload(id));
+});
+
+/* ---------- Trip discussion ---------- */
+
+/**
+ * Post a comment or a reply.
+ *
+ * Two kinds of author. A member posts with their token and is attributed to
+ * their member id. Anyone else may post *only* on a published trip, and only
+ * with a name — that's the "ask a question before you copy this" path, and the
+ * reason this endpoint isn't simply member-gated like the rest.
+ */
+app.post("/api/plans/:id/comments", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  const plan = db.prepare("SELECT is_published FROM plans WHERE id = ?").get(id) as
+    | { is_published: number }
+    | undefined;
+  if (!plan) return res.status(404).json({ error: "Plan not found" });
+
+  const body = String(req.body?.body ?? "").trim().slice(0, 2000);
+  if (!body) return res.status(400).json({ error: "body is required" });
+  const parentId = req.body?.parentId ?? null;
+
+  const member = authMember(req, id);
+  let authorName: string | null = null;
+  if (!member) {
+    if (!plan.is_published) {
+      return res.status(403).json({ error: "Join this trip to post" });
+    }
+    authorName = String(req.body?.authorName ?? "").trim().slice(0, 40);
+    if (!authorName) {
+      return res.status(400).json({ error: "Add your name to ask a question" });
+    }
+  }
+
+  db.prepare(
+    `INSERT INTO plan_comments (plan_id, member_id, author_name, body, parent_id, created_at)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+  ).run(id, member?.id ?? null, authorName, body, parentId, new Date().toISOString());
+  touchPlan(id);
+  res.json(planPayload(id));
+});
+
+// Members can clear anything off their own trip's thread.
+app.delete("/api/plans/:id/comments/:commentId", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  const commentId = Number(req.params.commentId);
+  if (!requireMember(req, res, id)) return;
+  // Drop replies with their parent so nothing is left dangling.
+  db.prepare("DELETE FROM plan_comments WHERE plan_id = ? AND parent_id = ?").run(id, commentId);
+  db.prepare("DELETE FROM plan_comments WHERE plan_id = ? AND id = ?").run(id, commentId);
+  touchPlan(id);
+  res.json(planPayload(id));
+});
+
 /* ---------- Group packing list ---------- */
 
 // Add one item. `shared` marks gear the group only needs one of.
@@ -1011,12 +1191,33 @@ app.delete("/api/plans/:id/journal/:entryId", (req, res) => {
 /* ---------- Discover: published plans ---------- */
 
 app.get("/api/discover", (_req, res) => {
+  // Each card also advertises what's inside the group space — the crew, the
+  // conversation and the album are the reason to open one.
   const rows = db
     .prepare(
-      `SELECT p.*, (SELECT COUNT(*) FROM plan_members m WHERE m.plan_id = p.id) AS member_count
+      `SELECT p.*,
+        (SELECT COUNT(*) FROM plan_members  m WHERE m.plan_id = p.id) AS member_count,
+        (SELECT COUNT(*) FROM plan_comments c WHERE c.plan_id = p.id) AS comment_count,
+        (SELECT COUNT(*) FROM plan_photos   h WHERE h.plan_id = p.id) AS photo_count
        FROM plans p WHERE p.is_published = 1 ORDER BY p.updated_at DESC LIMIT 60`,
     )
-    .all() as (PlanRow & { member_count: number })[];
+    .all() as (PlanRow & {
+    member_count: number;
+    comment_count: number;
+    photo_count: number;
+  })[];
+
+  // A cover shot per trip, so the feed can show the trip rather than describe it.
+  const covers = new Map<string, string>();
+  for (const row of db
+    .prepare(
+      `SELECT plan_id, file FROM plan_photos
+       WHERE id IN (SELECT MIN(id) FROM plan_photos GROUP BY plan_id)`,
+    )
+    .all() as { plan_id: string; file: string }[]) {
+    covers.set(row.plan_id, `/uploads/${row.file}`);
+  }
+
   res.json(
     rows.map((p) => ({
       id: p.id,
@@ -1027,6 +1228,9 @@ app.get("/api/discover", (_req, res) => {
       startDate: p.start_date,
       forkCount: p.fork_count,
       memberCount: p.member_count,
+      commentCount: p.comment_count,
+      photoCount: p.photo_count,
+      coverUrl: covers.get(p.id) ?? null,
       updatedAt: p.updated_at,
     })),
   );

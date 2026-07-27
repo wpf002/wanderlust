@@ -36,6 +36,28 @@ export interface PlanAssignment {
   done: boolean;
 }
 
+export interface PlanComment {
+  id: number;
+  /** Set when a member of the trip wrote it. */
+  memberId: number | null;
+  /** Set instead when a visitor asked a question on a published trip. */
+  authorName: string | null;
+  body: string;
+  parentId: number | null;
+  createdAt: string;
+}
+
+export interface PlanPhoto {
+  id: number;
+  memberId: number | null;
+  url: string;
+  caption: string | null;
+  dayNumber: number | null;
+  width: number | null;
+  height: number | null;
+  createdAt: string;
+}
+
 export interface PlanPackingItem {
   id: number;
   label: string;
@@ -75,6 +97,8 @@ export interface Plan {
   assignments: PlanAssignment[];
   journal: PlanJournalEntry[];
   packing: PlanPackingItem[];
+  comments: PlanComment[];
+  photos: PlanPhoto[];
 }
 
 export interface DiscoverPlan {
@@ -86,6 +110,10 @@ export interface DiscoverPlan {
   startDate: string | null;
   forkCount: number;
   memberCount: number;
+  commentCount: number;
+  photoCount: number;
+  /** First photo from the trip's album, used as the card's cover. */
+  coverUrl: string | null;
   updatedAt: string;
 }
 
@@ -205,6 +233,62 @@ export const plansApi = {
 
   removePacking: (code: string, id: number) =>
     write("DELETE", code, `/api/plans/${code}/packing/${id}`),
+
+  /**
+   * Post to the trip thread. Members are identified by their token; on a
+   * published trip a visitor can ask a question by supplying `authorName`.
+   */
+  addComment: (
+    code: string,
+    body: { body: string; parentId?: number | null; authorName?: string },
+  ) => write("POST", code, `/api/plans/${code}/comments`, body),
+
+  removeComment: (code: string, id: number) =>
+    write("DELETE", code, `/api/plans/${code}/comments/${id}`),
+
+  /** Upload raw image bytes — no multipart, so no extra client dependency. */
+  addPhoto: async (
+    code: string,
+    file: File,
+    meta: { caption?: string; day?: number; width?: number; height?: number } = {},
+  ) => {
+    const params = new URLSearchParams();
+    if (meta.caption) params.set("caption", meta.caption);
+    if (meta.day) params.set("day", String(meta.day));
+    if (meta.width) params.set("w", String(meta.width));
+    if (meta.height) params.set("h", String(meta.height));
+    const query = params.toString();
+    const token = getMyToken(code);
+    const res = await fetch(
+      `/api/plans/${code}/photos${query ? `?${query}` : ""}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": file.type,
+          ...(token ? { "x-plan-token": token } : {}),
+        },
+        body: file,
+      },
+    );
+    if (!res.ok) {
+      const text = await res.text().catch(() => res.statusText);
+      let message = text;
+      try {
+        const parsed = JSON.parse(text) as { error?: string };
+        if (parsed?.error) message = parsed.error;
+      } catch {
+        /* not JSON */
+      }
+      throw Object.assign(new Error(message), { status: res.status });
+    }
+    return (await res.json()) as Plan;
+  },
+
+  updatePhoto: (code: string, id: number, caption: string) =>
+    write("PATCH", code, `/api/plans/${code}/photos/${id}`, { caption }),
+
+  removePhoto: (code: string, id: number) =>
+    write("DELETE", code, `/api/plans/${code}/photos/${id}`),
 
   discover: () => apiRequest("GET", "/api/discover").then(json<DiscoverPlan[]>),
 

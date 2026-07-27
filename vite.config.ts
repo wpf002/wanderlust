@@ -16,6 +16,11 @@ export default defineConfig({
         target: "http://localhost:5001",
         changeOrigin: true,
       },
+      // Trip photos are served off the API's data volume, not from /public.
+      "/uploads": {
+        target: "http://localhost:5001",
+        changeOrigin: true,
+      },
     },
   },
   build: {

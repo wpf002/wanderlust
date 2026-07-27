@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Users, DollarSign, Gauge, Plane, Compass, PlusCircle, Plus, Search, X } from "lucide-react";
+import { Users, DollarSign, Gauge, Plane, Compass, PlusCircle, Plus, Search, Telescope, X } from "lucide-react";
 import type { GasPriceData, Settings } from "@/data/types";
 import { useTrips } from "@/data/useTrips";
 import { estimateTripCosts } from "@/lib/costs";
@@ -178,7 +178,8 @@ export default function ExplorePage({
           </h1>
           <p className="text-[var(--color-text-muted)] text-base max-w-lg mx-auto">
             Pre-built itineraries for iconic trips, or describe your dream
-            vacation and we'll build it for you.
+            vacation and we'll build it for you. Going with friends? Share a
+            link and plan it together.
           </p>
           <div className="flex items-center justify-center gap-3 mt-5">
             <button
@@ -197,6 +198,13 @@ export default function ExplorePage({
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[var(--color-border)] text-sm font-medium hover:bg-[var(--color-surface-offset)] transition-colors"
             >
               <Compass size={15} /> Browse Trips
+            </button>
+            <button
+              onClick={() => navigate("/discover")}
+              data-testid="btn-discover-trips"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[var(--color-border)] text-sm font-medium hover:bg-[var(--color-surface-offset)] transition-colors"
+            >
+              <Telescope size={15} /> Trips People Took
             </button>
           </div>
         </div>
