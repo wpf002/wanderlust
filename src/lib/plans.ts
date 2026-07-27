@@ -45,6 +45,9 @@ export interface PlanComment {
   body: string;
   parentId: number | null;
   createdAt: string;
+  /** Moderation state — present only when a member is asking. */
+  hidden?: boolean;
+  reportCount?: number;
 }
 
 export interface PlanPhoto {
@@ -87,6 +90,8 @@ export interface Plan {
   settings: Settings;
   startDate: string | null;
   isPublished: boolean;
+  /** Whether a published trip still takes questions from visitors. */
+  allowQuestions: boolean;
   blurb: string | null;
   forkCount: number;
   forkedFrom: string | null;
@@ -141,8 +146,17 @@ export const plansApi = {
     settings?: Settings;
   }) => apiRequest("POST", "/api/plans", body).then(json<PlanWithToken>),
 
+  /**
+   * Reads are open, but the token still rides along: the server only returns
+   * hidden comments and their report counts to a member of the trip.
+   */
   get: (code: string) =>
-    apiRequest("GET", `/api/plans/${code.toUpperCase()}`).then(json<Plan>),
+    apiRequest(
+      "GET",
+      `/api/plans/${code.toUpperCase()}`,
+      undefined,
+      getMyToken(code),
+    ).then(json<Plan>),
 
   update: (
     code: string,
@@ -151,6 +165,7 @@ export const plansApi = {
       settings: Settings;
       startDate: string | null;
       isPublished: boolean;
+      allowQuestions: boolean;
       blurb: string;
     }>,
   ) => write("PATCH", code, `/api/plans/${code}`, body),
@@ -245,6 +260,16 @@ export const plansApi = {
 
   removeComment: (code: string, id: number) =>
     write("DELETE", code, `/api/plans/${code}/comments/${id}`),
+
+  /** Hide (or restore) a comment — reversible, unlike removeComment. */
+  setCommentHidden: (code: string, id: number, hidden: boolean) =>
+    write("PATCH", code, `/api/plans/${code}/comments/${id}`, { hidden }),
+
+  /** Flag a comment for the group. Open to visitors, so no token required. */
+  reportComment: (code: string, id: number) =>
+    apiRequest("POST", `/api/plans/${code}/comments/${id}/report`).then(
+      json<{ ok: true }>,
+    ),
 
   /** Upload raw image bytes — no multipart, so no extra client dependency. */
   addPhoto: async (

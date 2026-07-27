@@ -31,7 +31,91 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
+// Railway terminates TLS in front of us, so the client address arrives in
+// X-Forwarded-For. Without this every request looks like it comes from the
+// proxy and the rate limits below would apply to everyone at once.
+app.set("trust proxy", 1);
 app.use(express.json());
+
+/* ---------- Rate limiting ---------- */
+
+/**
+ * Fixed-window counter, held in memory.
+ *
+ * One process serves this app, so a shared store would be ceremony for no
+ * gain; the cost is that the counters reset on deploy. Good enough to stop
+ * scripted flooding, which is the actual threat to a link-shared trip.
+ */
+const hits = new Map<string, { count: number; resetAt: number }>();
+
+function rateLimit(opts: { windowMs: number; max: number; name: string; message: string }) {
+  return (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const key = `${opts.name}:${req.ip ?? "unknown"}`;
+    const now = Date.now();
+    const entry = hits.get(key);
+
+    if (!entry || now >= entry.resetAt) {
+      hits.set(key, { count: 1, resetAt: now + opts.windowMs });
+      return next();
+    }
+    if (entry.count >= opts.max) {
+      const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
+      res.setHeader("Retry-After", String(retryAfter));
+      return res.status(429).json({ error: opts.message, retryAfter });
+    }
+    entry.count += 1;
+    next();
+  };
+}
+
+// Sweep expired windows so a long-running process doesn't grow a key per
+// address forever.
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of hits) if (now >= entry.resetAt) hits.delete(key);
+}, 10 * 60_000).unref();
+
+const MINUTE = 60_000;
+const HOUR = 60 * MINUTE;
+
+/** Anyone with a link can do these, so they're the ones worth holding down. */
+const limitQuestions = rateLimit({
+  name: "question",
+  windowMs: HOUR,
+  max: 5,
+  message: "That's a lot of questions at once. Try again in a little while.",
+});
+const limitReports = rateLimit({
+  name: "report",
+  windowMs: HOUR,
+  max: 20,
+  message: "Too many reports at once. Try again in a little while.",
+});
+const limitPlanCreate = rateLimit({
+  name: "plan-create",
+  windowMs: HOUR,
+  max: 20,
+  message: "You've started a lot of trips. Try again in a little while.",
+});
+const limitJoin = rateLimit({
+  name: "join",
+  windowMs: HOUR,
+  max: 30,
+  message: "Too many join attempts. Try again in a little while.",
+});
+const limitUpload = rateLimit({
+  name: "upload",
+  windowMs: HOUR,
+  max: 100,
+  message: "That's a lot of photos at once. Give it a few minutes.",
+});
+/** Members are trusted but still shouldn't be able to hammer the database. */
+const limitMemberWrites = rateLimit({
+  name: "member-write",
+  windowMs: MINUTE,
+  max: 120,
+  message: "Slow down a moment.",
+});
 
 /**
  * Trip photos live on the same volume as the database, so the app stays
@@ -564,8 +648,14 @@ function requireMember(
   return member;
 }
 
-/** Full plan payload: everything the group hub needs in one round trip. */
-function planPayload(planId: string) {
+/**
+ * Full plan payload: everything the group hub needs in one round trip.
+ *
+ * `viewerIsMember` decides whether hidden comments come back. The group needs
+ * to see what they hid — to restore it, or to confirm it's gone from public
+ * view — but nobody else should be served content the group took down.
+ */
+function planPayload(planId: string, viewerIsMember = false) {
   const plan = db.prepare("SELECT * FROM plans WHERE id = ?").get(planId) as
     | PlanRow
     | undefined;
@@ -583,9 +673,22 @@ function planPayload(planId: string) {
   const packing = db
     .prepare("SELECT * FROM plan_packing WHERE plan_id = ? ORDER BY id ASC")
     .all(planId) as PlanPackingRow[];
-  const comments = db
-    .prepare("SELECT * FROM plan_comments WHERE plan_id = ? ORDER BY id ASC")
-    .all(planId) as PlanCommentRow[];
+  const comments = (
+    db
+      .prepare("SELECT * FROM plan_comments WHERE plan_id = ? ORDER BY id ASC")
+      .all(planId) as PlanCommentRow[]
+  ).filter((c) => viewerIsMember || !c.hidden);
+  const reportCounts = new Map(
+    (
+      db
+        .prepare(
+          `SELECT r.comment_id AS id, COUNT(*) AS n FROM plan_comment_reports r
+           JOIN plan_comments c ON c.id = r.comment_id
+           WHERE c.plan_id = ? GROUP BY r.comment_id`,
+        )
+        .all(planId) as { id: number; n: number }[]
+    ).map((r) => [r.id, r.n]),
+  );
   const photos = db
     .prepare("SELECT * FROM plan_photos WHERE plan_id = ? ORDER BY id DESC")
     .all(planId) as PlanPhotoRow[];
@@ -606,6 +709,7 @@ function planPayload(planId: string) {
     settings: JSON.parse(plan.settings),
     startDate: plan.start_date,
     isPublished: !!plan.is_published,
+    allowQuestions: !!plan.allow_questions,
     blurb: plan.blurb,
     forkCount: plan.fork_count,
     forkedFrom: plan.forked_from,
@@ -648,6 +752,10 @@ function planPayload(planId: string) {
       body: c.body,
       parentId: c.parent_id,
       createdAt: c.created_at,
+      // Moderation state is the group's business, not a visitor's.
+      ...(viewerIsMember
+        ? { hidden: !!c.hidden, reportCount: reportCounts.get(c.id) ?? 0 }
+        : {}),
     })),
     photos: photos.map((p) => ({
       id: p.id,
@@ -695,7 +803,7 @@ const PLAN_DEFAULT_SETTINGS = {
 };
 
 // Create a plan (optionally seeding the creator as the first member).
-app.post("/api/plans", (req, res) => {
+app.post("/api/plans", limitPlanCreate, (req, res) => {
   const { templateId, title, settings, ownerName } = req.body ?? {};
   if (!templateId || !title) {
     return res.status(400).json({ error: "templateId and title are required" });
@@ -725,11 +833,12 @@ app.post("/api/plans", (req, res) => {
   }
   // `token` rides along only here, on the response to the browser that created
   // the plan. It is never part of the plan payload.
-  res.json({ ...planPayload(id), token });
+  res.json({ ...planPayload(id, true), token });
 });
 
 app.get("/api/plans/:id", (req, res) => {
-  const payload = planPayload(req.params.id.toUpperCase());
+  const id = req.params.id.toUpperCase();
+  const payload = planPayload(id, !!authMember(req, id));
   if (!payload) return res.status(404).json({ error: "Plan not found" });
   res.json(payload);
 });
@@ -739,7 +848,8 @@ app.patch("/api/plans/:id", (req, res) => {
   const plan = db.prepare("SELECT id FROM plans WHERE id = ?").get(id);
   if (!plan) return res.status(404).json({ error: "Plan not found" });
   if (!requireMember(req, res, id)) return;
-  const { title, settings, startDate, isPublished, blurb } = req.body ?? {};
+  const { title, settings, startDate, isPublished, blurb, allowQuestions } =
+    req.body ?? {};
   if (title !== undefined)
     db.prepare("UPDATE plans SET title = ? WHERE id = ?").run(title, id);
   if (settings !== undefined)
@@ -756,12 +866,17 @@ app.patch("/api/plans/:id", (req, res) => {
     );
   if (blurb !== undefined)
     db.prepare("UPDATE plans SET blurb = ? WHERE id = ?").run(blurb, id);
+  if (allowQuestions !== undefined)
+    db.prepare("UPDATE plans SET allow_questions = ? WHERE id = ?").run(
+      allowQuestions ? 1 : 0,
+      id,
+    );
   touchPlan(id);
-  res.json(planPayload(id));
+  res.json(planPayload(id, true));
 });
 
 // Join a plan by name — no account required, which is the whole point.
-app.post("/api/plans/:id/members", (req, res) => {
+app.post("/api/plans/:id/members", limitJoin, (req, res) => {
   const id = req.params.id.toUpperCase();
   if (!db.prepare("SELECT id FROM plans WHERE id = ?").get(id))
     return res.status(404).json({ error: "Plan not found" });
@@ -790,7 +905,7 @@ app.post("/api/plans/:id/members", (req, res) => {
     return res.json({
       member: { id: already.id, name: already.name, color: already.color },
       token,
-      plan: planPayload(id),
+      plan: planPayload(id, true),
     });
   }
 
@@ -805,7 +920,7 @@ app.post("/api/plans/:id/members", (req, res) => {
   res.json({
     member: { id: Number(info.lastInsertRowid), name, color },
     token,
-    plan: planPayload(id),
+    plan: planPayload(id, true),
   });
 });
 
@@ -816,7 +931,7 @@ app.delete("/api/plans/:id/members/:memberId", (req, res) => {
   db.prepare("DELETE FROM plan_members WHERE plan_id = ? AND id = ?").run(id, memberId);
   db.prepare("DELETE FROM plan_dates WHERE plan_id = ? AND member_id = ?").run(id, memberId);
   touchPlan(id);
-  res.json(planPayload(id));
+  res.json(planPayload(id, true));
 });
 
 // Replace one member's availability in a single call.
@@ -839,7 +954,7 @@ app.put("/api/plans/:id/availability/:memberId", (req, res) => {
   });
   tx();
   touchPlan(id);
-  res.json(planPayload(id));
+  res.json(planPayload(id, true));
 });
 
 app.post("/api/plans/:id/expenses", (req, res) => {
@@ -863,7 +978,7 @@ app.post("/api/plans/:id/expenses", (req, res) => {
     new Date().toISOString(),
   );
   touchPlan(id);
-  res.json(planPayload(id));
+  res.json(planPayload(id, true));
 });
 
 app.delete("/api/plans/:id/expenses/:expenseId", (req, res) => {
@@ -874,7 +989,7 @@ app.delete("/api/plans/:id/expenses/:expenseId", (req, res) => {
     Number(req.params.expenseId),
   );
   touchPlan(id);
-  res.json(planPayload(id));
+  res.json(planPayload(id, true));
 });
 
 app.post("/api/plans/:id/assignments", (req, res) => {
@@ -887,7 +1002,7 @@ app.post("/api/plans/:id/assignments", (req, res) => {
      VALUES (?, ?, ?, ?, ?)`,
   ).run(id, String(label).slice(0, 120), category ?? "todo", assigneeId ?? null, new Date().toISOString());
   touchPlan(id);
-  res.json(planPayload(id));
+  res.json(planPayload(id, true));
 });
 
 app.patch("/api/plans/:id/assignments/:assignmentId", (req, res) => {
@@ -902,7 +1017,7 @@ app.patch("/api/plans/:id/assignments/:assignmentId", (req, res) => {
   if (label !== undefined)
     db.prepare("UPDATE plan_assignments SET label = ? WHERE plan_id = ? AND id = ?").run(label, id, aid);
   touchPlan(id);
-  res.json(planPayload(id));
+  res.json(planPayload(id, true));
 });
 
 app.delete("/api/plans/:id/assignments/:assignmentId", (req, res) => {
@@ -913,7 +1028,7 @@ app.delete("/api/plans/:id/assignments/:assignmentId", (req, res) => {
     Number(req.params.assignmentId),
   );
   touchPlan(id);
-  res.json(planPayload(id));
+  res.json(planPayload(id, true));
 });
 
 /* ---------- Shared trip album ---------- */
@@ -932,7 +1047,8 @@ const PHOTO_TYPES: Record<string, string> = {
  */
 app.post(
   "/api/plans/:id/photos",
-  express.raw({ type: Object.keys(PHOTO_TYPES), limit: "12mb" }),
+  limitUpload,
+    express.raw({ type: Object.keys(PHOTO_TYPES), limit: "12mb" }),
   (req, res) => {
     const id = req.params.id.toUpperCase();
     const me = requireMember(req, res, id);
@@ -966,7 +1082,7 @@ app.post(
       new Date().toISOString(),
     );
     touchPlan(id);
-    res.json(planPayload(id));
+    res.json(planPayload(id, true));
   },
 );
 
@@ -980,7 +1096,7 @@ app.patch("/api/plans/:id/photos/:photoId", (req, res) => {
     Number(req.params.photoId),
   );
   touchPlan(id);
-  res.json(planPayload(id));
+  res.json(planPayload(id, true));
 });
 
 app.delete("/api/plans/:id/photos/:photoId", (req, res) => {
@@ -996,7 +1112,7 @@ app.delete("/api/plans/:id/photos/:photoId", (req, res) => {
     db.prepare("DELETE FROM plan_photos WHERE plan_id = ? AND id = ?").run(id, photoId);
   }
   touchPlan(id);
-  res.json(planPayload(id));
+  res.json(planPayload(id, true));
 });
 
 /* ---------- Trip discussion ---------- */
@@ -1009,11 +1125,20 @@ app.delete("/api/plans/:id/photos/:photoId", (req, res) => {
  * with a name — that's the "ask a question before you copy this" path, and the
  * reason this endpoint isn't simply member-gated like the rest.
  */
-app.post("/api/plans/:id/comments", (req, res) => {
+/** Rough link count — a question with a pile of URLs is an advert. */
+function countLinks(text: string): number {
+  return (text.match(/https?:\/\/|www\.[a-z0-9-]+\./gi) ?? []).length;
+}
+
+app.post("/api/plans/:id/comments", (req, res, next) => {
+  // Members are already authenticated, so only strangers pay the strict limit.
+  const isMember = !!authMember(req, req.params.id.toUpperCase());
+  return (isMember ? limitMemberWrites : limitQuestions)(req, res, next);
+}, (req, res) => {
   const id = req.params.id.toUpperCase();
-  const plan = db.prepare("SELECT is_published FROM plans WHERE id = ?").get(id) as
-    | { is_published: number }
-    | undefined;
+  const plan = db
+    .prepare("SELECT is_published, allow_questions FROM plans WHERE id = ?")
+    .get(id) as { is_published: number; allow_questions: number } | undefined;
   if (!plan) return res.status(404).json({ error: "Plan not found" });
 
   const body = String(req.body?.body ?? "").trim().slice(0, 2000);
@@ -1026,6 +1151,17 @@ app.post("/api/plans/:id/comments", (req, res) => {
     if (!plan.is_published) {
       return res.status(403).json({ error: "Join this trip to post" });
     }
+    if (!plan.allow_questions) {
+      return res
+        .status(403)
+        .json({ error: "This group has turned off questions from visitors." });
+    }
+    // Spam is mostly links. Members can paste as many as they like.
+    if (countLinks(body) > 2) {
+      return res
+        .status(400)
+        .json({ error: "Too many links for a question — ask in words." });
+    }
     authorName = String(req.body?.authorName ?? "").trim().slice(0, 40);
     if (!authorName) {
       return res.status(400).json({ error: "Add your name to ask a question" });
@@ -1037,7 +1173,52 @@ app.post("/api/plans/:id/comments", (req, res) => {
      VALUES (?, ?, ?, ?, ?, ?)`,
   ).run(id, member?.id ?? null, authorName, body, parentId, new Date().toISOString());
   touchPlan(id);
-  res.json(planPayload(id));
+  res.json(planPayload(id, true));
+});
+
+/**
+ * Hide or restore a comment. Hiding is the reversible option and the one the
+ * group should reach for first — the text stays for them to review, and
+ * `planPayload` stops serving it to anyone else.
+ */
+app.patch("/api/plans/:id/comments/:commentId", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  if (!requireMember(req, res, id)) return;
+  const hidden = req.body?.hidden ? 1 : 0;
+  db.prepare("UPDATE plan_comments SET hidden = ? WHERE plan_id = ? AND id = ?").run(
+    hidden,
+    id,
+    Number(req.params.commentId),
+  );
+  touchPlan(id);
+  res.json(planPayload(id, true));
+});
+
+/**
+ * Flag a comment for the group's attention. Open to anyone who can see the
+ * thread — the people most likely to spot an abusive question are the ones
+ * reading it, not the group who may be mid-flight.
+ */
+app.post("/api/plans/:id/comments/:commentId/report", limitReports, (req, res) => {
+  const id = req.params.id.toUpperCase();
+  const commentId = Number(req.params.commentId);
+  const exists = db
+    .prepare("SELECT id FROM plan_comments WHERE plan_id = ? AND id = ?")
+    .get(id, commentId);
+  if (!exists) return res.status(404).json({ error: "Comment not found" });
+
+  // One report each. Members are keyed by id; everyone else by address, which
+  // is coarse but enough to stop a single person running the count up.
+  const member = authMember(req, id);
+  const key = member ? `m:${member.id}` : `ip:${req.ip ?? "unknown"}`;
+  db.prepare(
+    `INSERT OR IGNORE INTO plan_comment_reports (comment_id, reporter_key, created_at)
+     VALUES (?, ?, ?)`,
+  ).run(commentId, key, new Date().toISOString());
+
+  // Deliberately no plan payload back: a reporter shouldn't learn from the
+  // response whether the report was new, or anything about the group's state.
+  res.json({ ok: true });
 });
 
 // Members can clear anything off their own trip's thread.
@@ -1049,7 +1230,7 @@ app.delete("/api/plans/:id/comments/:commentId", (req, res) => {
   db.prepare("DELETE FROM plan_comments WHERE plan_id = ? AND parent_id = ?").run(id, commentId);
   db.prepare("DELETE FROM plan_comments WHERE plan_id = ? AND id = ?").run(id, commentId);
   touchPlan(id);
-  res.json(planPayload(id));
+  res.json(planPayload(id, true));
 });
 
 /* ---------- Group packing list ---------- */
@@ -1071,7 +1252,7 @@ app.post("/api/plans/:id/packing", (req, res) => {
     new Date().toISOString(),
   );
   touchPlan(id);
-  res.json(planPayload(id));
+  res.json(planPayload(id, true));
 });
 
 // Seed a whole template list at once, skipping anything already on the list.
@@ -1108,7 +1289,7 @@ app.post("/api/plans/:id/packing/seed", (req, res) => {
   });
   tx();
   touchPlan(id);
-  res.json(planPayload(id));
+  res.json(planPayload(id, true));
 });
 
 app.patch("/api/plans/:id/packing/:itemId", (req, res) => {
@@ -1126,7 +1307,7 @@ app.patch("/api/plans/:id/packing/:itemId", (req, res) => {
   if (claimedBy !== undefined) set("claimed_by", claimedBy);
   if (done !== undefined) set("done", done ? 1 : 0);
   touchPlan(id);
-  res.json(planPayload(id));
+  res.json(planPayload(id, true));
 });
 
 // Tick a personal item off for yourself. The token decides whose box it is.
@@ -1150,7 +1331,7 @@ app.put("/api/plans/:id/packing/:itemId/check", (req, res) => {
     ).run(itemId, me.id);
   }
   touchPlan(id);
-  res.json(planPayload(id));
+  res.json(planPayload(id, true));
 });
 
 app.delete("/api/plans/:id/packing/:itemId", (req, res) => {
@@ -1160,7 +1341,7 @@ app.delete("/api/plans/:id/packing/:itemId", (req, res) => {
   db.prepare("DELETE FROM plan_packing_checks WHERE item_id = ?").run(itemId);
   db.prepare("DELETE FROM plan_packing WHERE plan_id = ? AND id = ?").run(id, itemId);
   touchPlan(id);
-  res.json(planPayload(id));
+  res.json(planPayload(id, true));
 });
 
 app.post("/api/plans/:id/journal", (req, res) => {
@@ -1174,7 +1355,7 @@ app.post("/api/plans/:id/journal", (req, res) => {
     "INSERT INTO plan_journal (plan_id, member_id, day_number, text, created_at) VALUES (?, ?, ?, ?, ?)",
   ).run(id, author.id, dayNumber ?? null, String(text).slice(0, 2000), new Date().toISOString());
   touchPlan(id);
-  res.json(planPayload(id));
+  res.json(planPayload(id, true));
 });
 
 app.delete("/api/plans/:id/journal/:entryId", (req, res) => {
@@ -1185,7 +1366,7 @@ app.delete("/api/plans/:id/journal/:entryId", (req, res) => {
     Number(req.params.entryId),
   );
   touchPlan(id);
-  res.json(planPayload(id));
+  res.json(planPayload(id, true));
 });
 
 /* ---------- Discover: published plans ---------- */
@@ -1237,7 +1418,7 @@ app.get("/api/discover", (_req, res) => {
 });
 
 // Fork a published plan into a fresh one you own.
-app.post("/api/plans/:id/fork", (req, res) => {
+app.post("/api/plans/:id/fork", limitPlanCreate, (req, res) => {
   const sourceId = req.params.id.toUpperCase();
   const source = db.prepare("SELECT * FROM plans WHERE id = ?").get(sourceId) as
     | PlanRow
@@ -1272,7 +1453,7 @@ app.post("/api/plans/:id/fork", (req, res) => {
       "INSERT INTO plan_members (plan_id, name, color, joined_at, token) VALUES (?, ?, ?, ?, ?)",
     ).run(id, ownerName, MEMBER_COLORS[0], now, token);
   }
-  res.json({ ...planPayload(id), token });
+  res.json({ ...planPayload(id, true), token });
 });
 
 /* ---------- Custom trips (user-authored templates) ---------- */

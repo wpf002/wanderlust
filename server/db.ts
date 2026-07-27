@@ -128,7 +128,19 @@ CREATE TABLE IF NOT EXISTS plan_comments (
   author_name TEXT,
   body        TEXT NOT NULL,
   parent_id   INTEGER,
+  -- Hidden by the group: kept for them to review or restore, never served to
+  -- anyone else. Deleting is still available and is irreversible.
+  hidden      INTEGER NOT NULL DEFAULT 0,
   created_at  TEXT NOT NULL
+);
+
+-- One row per reporter per comment, so a single person can't inflate a count.
+-- The reporter is a coarse key (member id, or a hash of their address).
+CREATE TABLE IF NOT EXISTS plan_comment_reports (
+  comment_id   INTEGER NOT NULL,
+  reporter_key TEXT NOT NULL,
+  created_at   TEXT NOT NULL,
+  PRIMARY KEY (comment_id, reporter_key)
 );
 
 -- Shared trip album. The file itself lives on disk under DATA_DIR/uploads;
@@ -226,6 +238,9 @@ function addColumnIfMissing(table: string, column: string, definition: string) {
 }
 
 addColumnIfMissing("plan_members", "token", "TEXT");
+addColumnIfMissing("plan_comments", "hidden", "INTEGER NOT NULL DEFAULT 0");
+// A published trip takes questions unless the group turns them off.
+addColumnIfMissing("plans", "allow_questions", "INTEGER NOT NULL DEFAULT 1");
 
 /* ---------- Row types ---------- */
 
@@ -308,6 +323,7 @@ export interface PlanRow {
   settings: string;
   start_date: string | null;
   is_published: number;
+  allow_questions: number;
   blurb: string | null;
   fork_count: number;
   forked_from: string | null;
@@ -351,6 +367,7 @@ export interface PlanCommentRow {
   author_name: string | null;
   body: string;
   parent_id: number | null;
+  hidden: number;
   created_at: string;
 }
 

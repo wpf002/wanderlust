@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 import {
   CornerDownRight,
+  Eye,
+  EyeOff,
+  Flag,
   MessagesSquare,
   Send,
   Trash2,
@@ -18,6 +21,19 @@ const INPUT =
   "w-full px-3 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]";
 const SEND_BUTTON =
   "flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white text-sm font-semibold transition-colors disabled:opacity-50";
+const PILL =
+  "text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded-md whitespace-nowrap";
+
+/**
+ * The API reports refusals as a plain sentence ("posting too fast", "too many
+ * links"), which is far more use than our generic line — show it when there is
+ * one, and fall back only for network-level failures.
+ */
+function errorText(err: unknown): string {
+  const e = err as { status?: number; message?: string };
+  if (e?.status && e.message) return e.message;
+  return "Couldn't save that. Try again?";
+}
 
 /** "just now" / "4h ago" / "3d ago" — mirrors the journal's clock. */
 function timeAgo(iso: string): string {
@@ -65,53 +81,119 @@ function CommentRow({
   comment,
   member,
   isMine,
-  canDelete,
+  canModerate,
+  canReport,
+  reported,
   busy,
   onDelete,
+  onToggleHidden,
+  onReport,
 }: {
   comment: PlanComment;
   member: PlanMember | undefined;
   isMine: boolean;
-  canDelete: boolean;
+  canModerate: boolean;
+  canReport: boolean;
+  reported: boolean;
   busy: boolean;
   onDelete: () => void;
+  onToggleHidden: () => void;
+  onReport: () => void;
 }) {
   const name = member?.name ?? comment.authorName ?? "Someone";
   // No member id means it came from a stranger browsing Discover.
   const fromVisitor = comment.memberId === null;
+  // The server only sends moderation state to members, so nobody else can end
+  // up rendering it by accident.
+  const hidden = canModerate && comment.hidden === true;
+  const reports = canModerate ? comment.reportCount ?? 0 : 0;
 
   return (
-    <div className="flex gap-3 min-w-0">
+    <div className={`flex gap-3 min-w-0 ${hidden ? "opacity-50" : ""}`}>
       <Avatar member={member} fallbackName={name} />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="text-sm font-medium break-words">{name}</span>
           {fromVisitor && (
-            <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded-md bg-[var(--color-surface-offset)] text-[var(--color-text-muted)] whitespace-nowrap">
+            <span
+              className={`${PILL} bg-[var(--color-surface-offset)] text-[var(--color-text-muted)]`}
+            >
               Asked from Discover
             </span>
           )}
           {isMine && (
-            <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded-md bg-[var(--color-primary)]/15 text-[var(--color-primary)] whitespace-nowrap">
+            <span
+              className={`${PILL} bg-[var(--color-primary)]/15 text-[var(--color-primary)]`}
+            >
               you
+            </span>
+          )}
+          {hidden && (
+            <span
+              className={`${PILL} bg-[var(--color-surface-offset)] text-[var(--color-text-muted)]`}
+            >
+              Hidden
+            </span>
+          )}
+          {reports > 0 && (
+            <span
+              className={`${PILL} bg-amber-500/15 text-amber-600 dark:text-amber-400`}
+            >
+              {reports} {reports === 1 ? "report" : "reports"}
             </span>
           )}
           <span className="text-[11px] text-[var(--color-text-faint)] whitespace-nowrap">
             {timeAgo(comment.createdAt)}
           </span>
 
-          {/* Only the trip's own people can clear the thread. */}
-          {canDelete && (
-            <button
-              onClick={onDelete}
-              disabled={busy}
-              title="Delete comment"
-              aria-label={`Delete ${name}'s comment`}
-              className="ml-auto p-1.5 rounded-lg text-[var(--color-text-faint)] hover:text-red-500 hover:bg-[var(--color-surface-offset)] transition-colors disabled:opacity-40"
-            >
-              <Trash2 size={14} />
-            </button>
-          )}
+          {/* Actions ride in their own box so they wrap as a unit on a phone. */}
+          <div className="ml-auto flex items-center gap-0.5">
+            {/* Anyone reading the thread can flag someone else's comment. */}
+            {canReport && (
+              <button
+                onClick={onReport}
+                disabled={busy || reported}
+                title={reported ? "Reported" : "Report to the group"}
+                aria-label={
+                  reported ? "Reported" : `Report ${name}'s comment`
+                }
+                className="flex items-center gap-1 px-1.5 py-1 rounded-lg text-[11px] text-[var(--color-text-faint)] hover:text-[var(--color-text-muted)] hover:bg-[var(--color-surface-offset)] transition-colors disabled:hover:bg-transparent disabled:opacity-60"
+              >
+                <Flag size={12} />
+                {reported ? "Reported" : "Report"}
+              </button>
+            )}
+
+            {/* Hiding is the soft, undoable version of a delete. */}
+            {canModerate && (
+              <button
+                onClick={onToggleHidden}
+                disabled={busy}
+                title={hidden ? "Restore comment" : "Hide comment"}
+                aria-label={
+                  hidden
+                    ? `Restore ${name}'s comment`
+                    : `Hide ${name}'s comment`
+                }
+                className="p-1.5 rounded-lg text-[var(--color-text-faint)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-offset)] transition-colors disabled:opacity-40"
+              >
+                {hidden ? <Eye size={14} /> : <EyeOff size={14} />}
+              </button>
+            )}
+
+            {/* Only the trip's own people can clear the thread. */}
+            {canModerate && (
+              <button
+                onClick={onDelete}
+                disabled={busy}
+                title="Delete comment"
+                aria-label={`Delete ${name}'s comment`}
+                className="p-1.5 rounded-lg text-[var(--color-text-faint)] hover:text-red-500 hover:bg-[var(--color-surface-offset)] transition-colors disabled:opacity-40"
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
+          </div>
         </div>
 
         <p className="text-sm mt-0.5 whitespace-pre-wrap break-words">
@@ -134,6 +216,9 @@ export default function TalkPanel({ plan, me, onPlan }: PanelProps) {
   const [replyDraft, setReplyDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Reports don't come back on the plan, so the "Reported" acknowledgement only
+  // has to last as long as this visit.
+  const [reported, setReported] = useState<Set<number>>(new Set());
 
   const memberById = useMemo(
     () => new Map(plan.members.map((m) => [m.id, m])),
@@ -162,7 +247,8 @@ export default function TalkPanel({ plan, me, onPlan }: PanelProps) {
   // A stranger may only speak up once the trip is out on Discover; on a private
   // trip the thread is read-only for them.
   const isVisitor = me === null;
-  const canVisitorPost = isVisitor && plan.isPublished;
+  // The group can also close questions on a trip that's still on Discover.
+  const canVisitorPost = isVisitor && plan.isPublished && plan.allowQuestions;
   const canPost = me !== null || canVisitorPost;
 
   /** Run a plansApi call and hand the fresh plan back to the shell. */
@@ -172,8 +258,23 @@ export default function TalkPanel({ plan, me, onPlan }: PanelProps) {
     setError(null);
     try {
       onPlan(await work());
-    } catch {
-      setError("Couldn't save that. Try again?");
+    } catch (err) {
+      setError(errorText(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /** Flagging returns no plan, so the acknowledgement is kept here instead. */
+  async function report(id: number) {
+    if (busy || reported.has(id)) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await plansApi.reportComment(plan.id, id);
+      setReported((prev) => new Set(prev).add(id));
+    } catch (err) {
+      setError(errorText(err));
     } finally {
       setBusy(false);
     }
@@ -210,18 +311,29 @@ export default function TalkPanel({ plan, me, onPlan }: PanelProps) {
   }
 
   /** Shared wiring for every row, so roots and replies stay identical. */
-  const rowProps = (comment: PlanComment) => ({
-    comment,
-    member:
-      comment.memberId === null
-        ? undefined
-        : memberById.get(comment.memberId) ?? undefined,
-    isMine: me !== null && me.id === comment.memberId,
-    canDelete: me !== null,
-    busy,
-    onDelete: () =>
-      void run(() => plansApi.removeComment(plan.id, comment.id)),
-  });
+  const rowProps = (comment: PlanComment) => {
+    const isMine = me !== null && me.id === comment.memberId;
+    return {
+      comment,
+      member:
+        comment.memberId === null
+          ? undefined
+          : memberById.get(comment.memberId) ?? undefined,
+      isMine,
+      canModerate: me !== null,
+      // Flagging your own words helps nobody.
+      canReport: !isMine,
+      reported: reported.has(comment.id),
+      busy,
+      onDelete: () =>
+        void run(() => plansApi.removeComment(plan.id, comment.id)),
+      onToggleHidden: () =>
+        void run(() =>
+          plansApi.setCommentHidden(plan.id, comment.id, !comment.hidden),
+        ),
+      onReport: () => void report(comment.id),
+    };
+  };
 
   return (
     <div className="space-y-4">
@@ -235,6 +347,45 @@ export default function TalkPanel({ plan, me, onPlan }: PanelProps) {
             {plan.comments.length === 1 ? "message" : "messages"}
           </span>
         </div>
+
+        {/* Only worth showing once strangers can actually see the trip. */}
+        {me && plan.isPublished && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-4">
+            <button
+              onClick={() =>
+                void run(() =>
+                  plansApi.update(plan.id, {
+                    allowQuestions: !plan.allowQuestions,
+                  }),
+                )
+              }
+              disabled={busy}
+              role="switch"
+              aria-checked={plan.allowQuestions}
+              className="flex items-center gap-2 text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors disabled:opacity-50"
+            >
+              <span
+                className={`w-8 h-[18px] shrink-0 rounded-full p-0.5 flex transition-colors ${
+                  plan.allowQuestions
+                    ? "bg-[var(--color-primary)] justify-end"
+                    : "bg-[var(--color-border)] justify-start"
+                }`}
+                aria-hidden
+              >
+                <span className="w-[14px] h-[14px] rounded-full bg-white" />
+              </span>
+              Questions from visitors
+              <span className="font-medium">
+                {plan.allowQuestions ? "on" : "off"}
+              </span>
+            </button>
+            {!plan.allowQuestions && (
+              <p className="w-full text-[11px] text-[var(--color-text-faint)]">
+                Visitors can read this trip but can't ask questions.
+              </p>
+            )}
+          </div>
+        )}
 
         {threads.length === 0 ? (
           <div className="text-center py-6">
@@ -382,7 +533,9 @@ export default function TalkPanel({ plan, me, onPlan }: PanelProps) {
         </div>
       ) : (
         <p className="text-xs text-[var(--color-text-faint)] px-1">
-          Only people on this trip can post here.
+          {isVisitor && plan.isPublished
+            ? "Visitors can read this trip but can't ask questions."
+            : "Only people on this trip can post here."}
         </p>
       )}
     </div>
