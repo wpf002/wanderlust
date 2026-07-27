@@ -118,7 +118,9 @@ export default function Navbar() {
           </svg>
           <span className="font-display font-bold text-base tracking-tight">Wanderlust</span>
         </button>
-        <nav className="hidden lg:flex items-center gap-0.5 overflow-x-auto">
+        {/* No overflow scrolling here: it clips the Tools dropdown, which hangs
+            below the bar. Four items plus a menu fit without it. */}
+        <nav className="hidden lg:flex items-center gap-0.5">
           {NAV_ITEMS.map(({ path, label, icon }) => (
             <button
               key={path}
