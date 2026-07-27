@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import {
   ArrowRight,
+  Backpack,
   CalendarDays,
   Check,
   Copy,
@@ -27,6 +28,7 @@ import {
 const CrewPanel = lazy(() => import("./group/CrewPanel"));
 const DatePollPanel = lazy(() => import("./group/DatePollPanel"));
 const MoneyPanel = lazy(() => import("./group/MoneyPanel"));
+const PackingPanel = lazy(() => import("./group/PackingPanel"));
 const InTripPanel = lazy(() => import("./group/InTripPanel"));
 
 export interface PanelProps {
@@ -38,13 +40,14 @@ export interface PanelProps {
   totalDays: number;
 }
 
-type TabId = "crew" | "dates" | "money" | "trip";
+type TabId = "crew" | "dates" | "money" | "packing" | "trip";
 
 /** `short` keeps every tab labelled on a phone, where "On the trip" won't fit. */
 const TABS: { id: TabId; label: string; short: string; icon: typeof Users }[] = [
   { id: "crew", label: "Crew", short: "Crew", icon: Users },
   { id: "dates", label: "Dates", short: "Dates", icon: CalendarDays },
   { id: "money", label: "Money", short: "Money", icon: Wallet },
+  { id: "packing", label: "Packing", short: "Pack", icon: Backpack },
   { id: "trip", label: "On the trip", short: "Trip", icon: ListChecks },
 ];
 
@@ -383,6 +386,9 @@ export default function GroupPlanPage({ code }: { code: string }) {
         )}
         {tab === "money" && (
           <MoneyPanel plan={plan} me={me} onPlan={onPlan} totalDays={totalDays} />
+        )}
+        {tab === "packing" && (
+          <PackingPanel plan={plan} me={me} onPlan={onPlan} totalDays={totalDays} />
         )}
         {tab === "trip" && (
           <InTripPanel plan={plan} me={me} onPlan={onPlan} totalDays={totalDays} />

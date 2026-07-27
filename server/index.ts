@@ -14,6 +14,8 @@ import {
   type NoteRow,
   type NotifPrefRow,
   type PlanAssignmentRow,
+  type PlanPackingCheckRow,
+  type PlanPackingRow,
   type PlanDateRow,
   type PlanExpenseRow,
   type PlanJournalRow,
@@ -558,6 +560,15 @@ function planPayload(planId: string) {
   const assignments = db
     .prepare("SELECT * FROM plan_assignments WHERE plan_id = ? ORDER BY id ASC")
     .all(planId) as PlanAssignmentRow[];
+  const packing = db
+    .prepare("SELECT * FROM plan_packing WHERE plan_id = ? ORDER BY id ASC")
+    .all(planId) as PlanPackingRow[];
+  const packingChecks = db
+    .prepare(
+      `SELECT c.* FROM plan_packing_checks c
+       JOIN plan_packing p ON p.id = c.item_id WHERE p.plan_id = ?`,
+    )
+    .all(planId) as PlanPackingCheckRow[];
   const journal = db
     .prepare("SELECT * FROM plan_journal WHERE plan_id = ? ORDER BY id DESC")
     .all(planId) as PlanJournalRow[];
@@ -603,6 +614,18 @@ function planPayload(planId: string) {
       dayNumber: j.day_number,
       text: j.text,
       createdAt: j.created_at,
+    })),
+    packing: packing.map((p) => ({
+      id: p.id,
+      label: p.label,
+      category: p.category,
+      shared: !!p.shared,
+      claimedBy: p.claimed_by,
+      done: !!p.done,
+      // Who has personally packed this one (empty for shared items).
+      packedBy: packingChecks
+        .filter((c) => c.item_id === p.id)
+        .map((c) => c.member_id),
     })),
   };
 }
@@ -845,6 +868,117 @@ app.delete("/api/plans/:id/assignments/:assignmentId", (req, res) => {
     id,
     Number(req.params.assignmentId),
   );
+  touchPlan(id);
+  res.json(planPayload(id));
+});
+
+/* ---------- Group packing list ---------- */
+
+// Add one item. `shared` marks gear the group only needs one of.
+app.post("/api/plans/:id/packing", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  if (!requireMember(req, res, id)) return;
+  const { label, category, shared } = req.body ?? {};
+  if (!label) return res.status(400).json({ error: "label is required" });
+  db.prepare(
+    `INSERT INTO plan_packing (plan_id, label, category, shared, created_at)
+     VALUES (?, ?, ?, ?, ?)`,
+  ).run(
+    id,
+    String(label).slice(0, 120),
+    String(category ?? "General").slice(0, 40),
+    shared ? 1 : 0,
+    new Date().toISOString(),
+  );
+  touchPlan(id);
+  res.json(planPayload(id));
+});
+
+// Seed a whole template list at once, skipping anything already on the list.
+app.post("/api/plans/:id/packing/seed", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  if (!requireMember(req, res, id)) return;
+  const items: { label?: string; category?: string; shared?: boolean }[] =
+    Array.isArray(req.body?.items) ? req.body.items : [];
+  const existing = new Set(
+    (
+      db
+        .prepare("SELECT label FROM plan_packing WHERE plan_id = ?")
+        .all(id) as { label: string }[]
+    ).map((r) => r.label.toLowerCase()),
+  );
+  const now = new Date().toISOString();
+  const insert = db.prepare(
+    `INSERT INTO plan_packing (plan_id, label, category, shared, created_at)
+     VALUES (?, ?, ?, ?, ?)`,
+  );
+  const tx = db.transaction(() => {
+    for (const item of items) {
+      const label = String(item?.label ?? "").trim().slice(0, 120);
+      if (!label || existing.has(label.toLowerCase())) continue;
+      existing.add(label.toLowerCase());
+      insert.run(
+        id,
+        label,
+        String(item?.category ?? "General").slice(0, 40),
+        item?.shared ? 1 : 0,
+        now,
+      );
+    }
+  });
+  tx();
+  touchPlan(id);
+  res.json(planPayload(id));
+});
+
+app.patch("/api/plans/:id/packing/:itemId", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  const itemId = Number(req.params.itemId);
+  if (!requireMember(req, res, id)) return;
+  const { label, category, shared, claimedBy, done } = req.body ?? {};
+  const set = (col: string, value: unknown) =>
+    db
+      .prepare(`UPDATE plan_packing SET ${col} = ? WHERE plan_id = ? AND id = ?`)
+      .run(value, id, itemId);
+  if (label !== undefined) set("label", String(label).slice(0, 120));
+  if (category !== undefined) set("category", String(category).slice(0, 40));
+  if (shared !== undefined) set("shared", shared ? 1 : 0);
+  if (claimedBy !== undefined) set("claimed_by", claimedBy);
+  if (done !== undefined) set("done", done ? 1 : 0);
+  touchPlan(id);
+  res.json(planPayload(id));
+});
+
+// Tick a personal item off for yourself. The token decides whose box it is.
+app.put("/api/plans/:id/packing/:itemId/check", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  const itemId = Number(req.params.itemId);
+  const me = requireMember(req, res, id);
+  if (!me) return;
+  const owns = db
+    .prepare("SELECT id FROM plan_packing WHERE plan_id = ? AND id = ?")
+    .get(id, itemId);
+  if (!owns) return res.status(404).json({ error: "Item not found" });
+
+  if (req.body?.checked) {
+    db.prepare(
+      "INSERT OR IGNORE INTO plan_packing_checks (item_id, member_id) VALUES (?, ?)",
+    ).run(itemId, me.id);
+  } else {
+    db.prepare(
+      "DELETE FROM plan_packing_checks WHERE item_id = ? AND member_id = ?",
+    ).run(itemId, me.id);
+  }
+  touchPlan(id);
+  res.json(planPayload(id));
+});
+
+app.delete("/api/plans/:id/packing/:itemId", (req, res) => {
+  const id = req.params.id.toUpperCase();
+  const itemId = Number(req.params.itemId);
+  if (!requireMember(req, res, id)) return;
+  db.prepare("DELETE FROM plan_packing_checks WHERE item_id = ?").run(itemId);
+  db.prepare("DELETE FROM plan_packing WHERE plan_id = ? AND id = ?").run(id, itemId);
   touchPlan(id);
   res.json(planPayload(id));
 });

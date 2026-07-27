@@ -36,6 +36,20 @@ export interface PlanAssignment {
   done: boolean;
 }
 
+export interface PlanPackingItem {
+  id: number;
+  label: string;
+  category: string;
+  /** One for the whole group (a cooler) vs. one each (a passport). */
+  shared: boolean;
+  /** Who's bringing a shared item. */
+  claimedBy: number | null;
+  /** Shared item packed. */
+  done: boolean;
+  /** Members who've packed their own copy of a personal item. */
+  packedBy: number[];
+}
+
 export interface PlanJournalEntry {
   id: number;
   memberId: number | null;
@@ -60,6 +74,7 @@ export interface Plan {
   expenses: PlanExpense[];
   assignments: PlanAssignment[];
   journal: PlanJournalEntry[];
+  packing: PlanPackingItem[];
 }
 
 export interface DiscoverPlan {
@@ -160,6 +175,36 @@ export const plansApi = {
 
   removeJournal: (code: string, id: number) =>
     write("DELETE", code, `/api/plans/${code}/journal/${id}`),
+
+  addPacking: (
+    code: string,
+    body: { label: string; category?: string; shared?: boolean },
+  ) => write("POST", code, `/api/plans/${code}/packing`, body),
+
+  /** Bulk-add a template list; the server skips labels already present. */
+  seedPacking: (
+    code: string,
+    items: { label: string; category: string; shared?: boolean }[],
+  ) => write("POST", code, `/api/plans/${code}/packing/seed`, { items }),
+
+  updatePacking: (
+    code: string,
+    id: number,
+    body: Partial<{
+      label: string;
+      category: string;
+      shared: boolean;
+      claimedBy: number | null;
+      done: boolean;
+    }>,
+  ) => write("PATCH", code, `/api/plans/${code}/packing/${id}`, body),
+
+  /** Tick a personal item for yourself — the server uses your token. */
+  checkPacking: (code: string, id: number, checked: boolean) =>
+    write("PUT", code, `/api/plans/${code}/packing/${id}/check`, { checked }),
+
+  removePacking: (code: string, id: number) =>
+    write("DELETE", code, `/api/plans/${code}/packing/${id}`),
 
   discover: () => apiRequest("GET", "/api/discover").then(json<DiscoverPlan[]>),
 

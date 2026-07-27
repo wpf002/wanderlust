@@ -119,6 +119,30 @@ CREATE TABLE IF NOT EXISTS plan_members (
   token     TEXT
 );
 
+-- Group packing list. Two kinds of item, which is what makes a shared list
+-- different from a solo one:
+--   shared = 1  → one for the whole group (a cooler, the speaker). One person
+--                 claims it and ticks it packed.
+--   shared = 0  → everyone needs their own (passport, chargers). Each member
+--                 ticks their own box — see plan_packing_checks.
+CREATE TABLE IF NOT EXISTS plan_packing (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  plan_id    TEXT NOT NULL,
+  label      TEXT NOT NULL,
+  category   TEXT NOT NULL DEFAULT 'General',
+  shared     INTEGER NOT NULL DEFAULT 0,
+  claimed_by INTEGER,
+  done       INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL
+);
+
+-- One row per member per personal item they've packed.
+CREATE TABLE IF NOT EXISTS plan_packing_checks (
+  item_id   INTEGER NOT NULL,
+  member_id INTEGER NOT NULL,
+  PRIMARY KEY (item_id, member_id)
+);
+
 -- One row per member per date they're available (date poll).
 CREATE TABLE IF NOT EXISTS plan_dates (
   id        INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -292,6 +316,22 @@ export interface PlanExpenseRow {
   category: string | null;
   day_number: number | null;
   created_at: string;
+}
+
+export interface PlanPackingRow {
+  id: number;
+  plan_id: string;
+  label: string;
+  category: string;
+  shared: number;
+  claimed_by: number | null;
+  done: number;
+  created_at: string;
+}
+
+export interface PlanPackingCheckRow {
+  item_id: number;
+  member_id: number;
 }
 
 export interface PlanAssignmentRow {
