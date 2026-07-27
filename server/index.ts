@@ -97,6 +97,18 @@ setInterval(() => {
   for (const [key, entry] of hits) if (now >= entry.resetAt) hits.delete(key);
 }, 10 * 60_000).unref();
 
+// TEMPORARY: reports were double-counting in production and req.ip is the
+// suspect. Remove once the cause is known.
+app.get("/api/_whoami", (req, res) => {
+  res.json({
+    key: clientKey(req),
+    ip: req.ip,
+    ips: req.ips,
+    xff: req.get("x-forwarded-for") ?? null,
+    envoy: req.get("x-envoy-external-address") ?? null,
+  });
+});
+
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 
