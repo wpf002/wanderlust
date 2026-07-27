@@ -48,9 +48,31 @@ app.use(express.json());
  */
 const hits = new Map<string, { count: number; resetAt: number }>();
 
+/**
+ * A stable-ish identifier for the caller.
+ *
+ * `req.ip` alone isn't stable enough: the same client arrives as `1.2.3.4` and
+ * as `::ffff:1.2.3.4`, and an IPv6 client draws a different address out of its
+ * prefix per connection. Both made one person look like several, which
+ * double-counted reports and handed out extra rate-limit budget.
+ *
+ * So: unwrap IPv4-mapped form, and collapse IPv6 to its /64, which is the
+ * block a single subscriber is normally assigned.
+ *
+ * A dual-stack client that alternates between IPv4 and IPv6 still looks like
+ * two callers. Nothing keyed on address alone can fix that, and it isn't worth
+ * more than it costs here.
+ */
+function clientKey(req: express.Request): string {
+  const raw = (req.ip ?? "unknown").trim();
+  const unmapped = raw.replace(/^::ffff:/i, "");
+  if (!unmapped.includes(":")) return unmapped;
+  return unmapped.split(":").slice(0, 4).join(":") + "::/64";
+}
+
 function rateLimit(opts: { windowMs: number; max: number; name: string; message: string }) {
   return (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const key = `${opts.name}:${req.ip ?? "unknown"}`;
+    const key = `${opts.name}:${clientKey(req)}`;
     const now = Date.now();
     const entry = hits.get(key);
 
@@ -1210,7 +1232,7 @@ app.post("/api/plans/:id/comments/:commentId/report", limitReports, (req, res) =
   // One report each. Members are keyed by id; everyone else by address, which
   // is coarse but enough to stop a single person running the count up.
   const member = authMember(req, id);
-  const key = member ? `m:${member.id}` : `ip:${req.ip ?? "unknown"}`;
+  const key = member ? `m:${member.id}` : `ip:${clientKey(req)}`;
   db.prepare(
     `INSERT OR IGNORE INTO plan_comment_reports (comment_id, reporter_key, created_at)
      VALUES (?, ?, ?)`,
