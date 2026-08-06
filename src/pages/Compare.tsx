@@ -68,6 +68,13 @@ function CostBar({
   );
 }
 
+/**
+ * Panels each trip contributes: summary, cost breakdown, trip info, highlights.
+ * The comparison grid uses this as its row count — keep it in step if a panel
+ * is added or removed.
+ */
+const PANELS_PER_TRIP = 4;
+
 /** Bundle `pae`: a single trip's comparison column. */
 function ComparisonCard({
   template,
@@ -95,27 +102,30 @@ function ComparisonCard({
     : null;
   const stops = countStops(template);
 
+  // Always the same rows in the same order, with an em dash where a trip has
+  // no answer. Skipping a row would slide every later label out of step with
+  // the trip beside it, which is the one thing a comparison can't afford.
   const infoRows: { icon: ReactNode; label: string; val: string }[] = [
     { icon: <Clock size={11} />, label: "Duration", val: `${template.totalDays} days` },
-    ...(miles
-      ? [{ icon: <Gauge size={11} />, label: "Miles", val: miles.toLocaleString() }]
-      : []),
+    {
+      icon: <Gauge size={11} />,
+      label: "Miles",
+      val: miles ? miles.toLocaleString() : "—",
+    },
     { icon: <Globe size={11} />, label: "Countries", val: template.countries.join(", ") },
     { icon: <MapPin size={11} />, label: "Attractions", val: `${stops} stops` },
     { icon: <Sun size={11} />, label: "Best Time", val: template.bestMonths },
-    ...(template.difficulty
-      ? [
-          {
-            icon: <Activity size={11} />,
-            label: "Difficulty",
-            val: `${template.difficulty.overall.toFixed(1)} / 5`,
-          },
-        ]
-      : []),
+    {
+      icon: <Activity size={11} />,
+      label: "Difficulty",
+      val: template.difficulty ? `${template.difficulty.overall.toFixed(1)} / 5` : "—",
+    },
   ];
 
   return (
-    <div className="flex flex-col gap-4">
+    // `contents` dissolves this wrapper so the four panels below become items
+    // of the comparison grid itself and can line up with the other trips'.
+    <div className="contents">
       <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
         <div className="flex items-start gap-3 mb-2">
           <span className="text-2xl leading-none">{template.emoji}</span>
@@ -165,12 +175,18 @@ function ComparisonCard({
         <h4 className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
           Trip Info
         </h4>
+        {/* A uniform row height keeps each label level with the same label in
+            the next trip, even when a value like "Best Time" runs to two
+            lines. Values are clamped so a very long one can't outgrow it. */}
         {infoRows.map(({ icon, label, val }) => (
-          <div key={label} className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-1.5 text-[var(--color-text-muted)]">
+          <div
+            key={label}
+            className="flex min-h-[2.5rem] items-center justify-between gap-3 text-sm"
+          >
+            <span className="flex shrink-0 items-center gap-1.5 text-[var(--color-text-muted)]">
               {icon} {label}
             </span>
-            <span className="font-medium text-right text-xs">{val}</span>
+            <span className="line-clamp-2 text-right text-xs font-medium">{val}</span>
           </div>
         ))}
       </div>
@@ -386,9 +402,17 @@ export default function ComparePage() {
         </div>
 
 
+        {/* Each column's panels are grid items of *this* grid rather than of
+            their own stack, so the matching panels across trips share a row and
+            stretch to the same height. Column-major flow keeps a trip's panels
+            in its own column; the row count is PANELS_PER_TRIP below. */}
         <div
           className="grid gap-4 overflow-x-auto pb-1"
-          style={{ gridTemplateColumns: `repeat(${selectedTrips.length}, minmax(min(11rem, 100%), 1fr))` }}
+          style={{
+            gridAutoFlow: "column",
+            gridTemplateRows: `repeat(${PANELS_PER_TRIP}, auto)`,
+            gridAutoColumns: `minmax(min(11rem, 100%), 1fr)`,
+          }}
         >
           {selectedTrips.map((trip) => (
             <ComparisonCard key={trip.id} template={trip} settings={settings} />
